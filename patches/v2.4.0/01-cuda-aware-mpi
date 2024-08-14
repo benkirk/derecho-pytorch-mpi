@@ -1,0 +1,27 @@
+diff --git a/torch/csrc/distributed/c10d/ProcessGroupMPI.cpp b/torch/csrc/distributed/c10d/ProcessGroupMPI.cpp
+index 6d02f89..fc6de1a 100644
+--- a/torch/csrc/distributed/c10d/ProcessGroupMPI.cpp
++++ b/torch/csrc/distributed/c10d/ProcessGroupMPI.cpp
+@@ -45,8 +45,7 @@ std::map<at::ScalarType, MPI_Datatype> mpiDatatype = {
+     {at::kShort, MPI_SHORT},
+ };
+ 
+-// Checking CUDA-aware MPI support, currently we only support CUDA aware
+-// MPI ops through Open MPI
++// Checking CUDA-aware MPI support
+ bool cudaAwareMpiCheck() {
+ // Run time check
+ #if defined(MPIX_CUDA_AWARE_SUPPORT)
+@@ -56,7 +55,11 @@ bool cudaAwareMpiCheck() {
+     return false;
+   }
+ #else // !defined(MPIX_CUDA_AWARE_SUPPORT)
+-  return false;
++  {
++    //BSK: these tests assume OpenMPI, bypass-to-true with cray-mpich on Derecho
++    //return false;
++    return true;
++  }
+ #endif // MPIX_CUDA_AWARE_SUPPORT
+ }
+ 

@@ -8,7 +8,17 @@ top_dir=$(git rev-parse --show-toplevel)
 #-------------------------------------------------------------------------------
 # setup host environment
 module --force purge
-module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 conda/latest cuda/12.2.1 cudnn/8.7.0.84-11.8  #cudnn/9.2.0.82-12
+module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 conda/latest cuda/12.2.1
+case "${PYTORCH_VERSION}" in
+    *"v2.4"*)
+        module load cudnn/9.2.0.82-12
+        ;;
+    *)
+        #module load cudnn/8.7.0.84-11.8
+        #LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/glade/u/apps/common/23.08/spack/opt/spack/cuda/11.8.0/targets/x86_64-linux/lib  # <-- required when using cudnn/8.7.0.84-11.8 with cuda/12.2.1 so cuDNN can locate libcublas.so.11
+        module load cudnn/8.8.1.3-12
+        ;;
+esac
 module list
 
 envname="pytorch-${PYTORCH_VERSION}-${NCAR_BUILD_ENV}"
@@ -101,7 +111,6 @@ export USE_CUDNN=1
 export CUDNN_LIBRARY=${NCAR_ROOT_CUDNN}
 export CUDNN_LIB_DIR=${NCAR_ROOT_CUDNN}/lib
 export CUDNN_INCLUDE_DIR=${NCAR_ROOT_CUDNN}/include
-# LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/glade/u/apps/common/23.08/spack/opt/spack/cuda/11.8.0/targets/x86_64-linux/lib # <-- required when using cudnn/8.7.0.84-11.8 with cuda/12.2.1
 
 export USE_CUSPARSELT=1
 
