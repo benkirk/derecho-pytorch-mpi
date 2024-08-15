@@ -30,6 +30,10 @@ echo "env_dir=${env_dir}"
 
 
 #-------------------------------------------------------------------------------
+# build nccl with AWS libfabric plugin if needed
+make -s -C ${script_dir} nccl-ofi
+
+#-------------------------------------------------------------------------------
 # clone pytorch source if needed
 make -s -C ${script_dir} pytorch-${PYTORCH_VERSION}
 
@@ -107,7 +111,6 @@ export MPICH_OFI_NIC_POLICY=GPU
 
 export USE_CUDA=1 # <-- https://github.com/pytorch/pytorch#from-source
 export TORCH_CUDA_ARCH_LIST="8.0" # <-- A100s
-#export PKG_CONFIG_PATH=${CUDA_HOME}/pkgconfig:${PKG_CONFIG_PATH}
 
 export USE_CUDNN=1
 export CUDNN_LIBRARY=${NCAR_ROOT_CUDNN}
@@ -116,7 +119,15 @@ export CUDNN_INCLUDE_DIR=${NCAR_ROOT_CUDNN}/include
 
 export USE_CUSPARSELT=1
 
-export USE_SYSTEM_NCCL=0
+export USE_SYSTEM_NCCL=1
+export NCCL_ROOT=${script_dir}/nccl-ofi/install
+export LD_LIBRARY_PATH=${NCCL_ROOT}/lib:${NCCL_ROOT}/aws-ofi-nccl-plugin/lib:${LD_LIBRARY_PATH}
+
+export FI_CXI_DISABLE_HOST_REGISTER=1
+export NCCL_CROSS_NIC=1
+export NCCL_SOCKET_IFNAME=hsn
+export NCCL_NET_GDR_LEVEL=PHB
+export NCCL_NET="AWS Libfabric"
 
 export BLAS=MKL
 

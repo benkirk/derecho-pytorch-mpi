@@ -14,7 +14,7 @@ module load gcc/12.2.0 cuda/12.2.1 >/dev/null 2>&1
 module list
 
 export INSTALL_DIR=${top_dir}/nccl-ofi/${NCAR_BUILD_ENV}
-export PLUGIN_DIR=${INSTALL_DIR}/plugin
+export PLUGIN_DIR=${INSTALL_DIR}/aws-ofi-nccl-plugin
 export NCCL_HOME=${INSTALL_DIR}
 export LIBFABRIC_HOME=/opt/cray/libfabric/1.15.2.0
 export GDRCOPY_HOME=/usr
@@ -28,7 +28,7 @@ export CC=$(which gcc)
 export CXX=$(which g++)
 
 build_dir=${top_dir}/build-${NCAR_BUILD_ENV}
-rm -rf ${build_dir}
+rm -rf ${build_dir} ${INSTALL_DIR}
 mkdir -p ${build_dir} || exit 1
 
 echo "========== BUILDING NCCL =========="
@@ -53,3 +53,6 @@ echo "========== PREPARING DEPENDENCIES =========="
 set -x
 mkdir -p ${PLUGIN_DIR}/deps/lib
 cp -P $(cat ${script_dir}/nccl-ofi-dependencies.txt) ${PLUGIN_DIR}/deps/lib/
+
+# symlink latest installed varsion path
+cd ${INSTALL_DIR}/.. && rm -f ./install && ln -s ${NCAR_BUILD_ENV} ./install

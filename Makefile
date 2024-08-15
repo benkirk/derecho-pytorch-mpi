@@ -13,9 +13,9 @@ pytorch-$(PYTORCH_VERSION):
 	cd $@.tmp && git submodule update --init --recursive --depth 1
 	mv $@.tmp $@
 
-pytorch-%/.build.stamp: pytorch-% Makefile config_env.sh
+pytorch-$(PYTORCH_VERSION)/.build.stamp: pytorch-$(PYTORCH_VERSION)  Makefile config_env.sh nccl-ofi
 	rm -f $@
-	source config_env.sh && cd pytorch-$* && python setup.py install | tee install.log
+	source config_env.sh && cd pytorch-$(PYTORCH_VERSION) && python setup.py install | tee install.log
 	date >> $@
 
 clean-pytorch-$(PYTORCH_VERSION): pytorch-$(PYTORCH_VERSION)
@@ -25,3 +25,7 @@ build-pbs:
 	make clean-pytorch-$(PYTORCH_VERSION)
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
 	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=4:00:00 -l select=1:ncpus=64:ngpus=4 -- make pytorch-$(PYTORCH_VERSION)/.build.stamp
+
+nccl-ofi/install/aws-ofi-nccl-plugin/lib/libnccl-net.so nccl-ofi/install/lib/libnccl.so nccl-ofi: \
+	utils/build_nccl-ofi-plugin.sh utils/nccl-ofi-dependencies.txt
+	./$<
