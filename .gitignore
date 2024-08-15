@@ -1,3 +1,5 @@
 *~
-pytorch*/
-pytorch-*-*.yaml
+env-pytorch*/
+env-pytorch-*-*.yaml
+nccl-ofi/
+pytorch-v*/
