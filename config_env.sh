@@ -3,7 +3,7 @@
 
 export PYTORCH_VERSION="${PYTORCH_VERSION:-v2.3.1}"
 
-top_dir=$(git rev-parse --show-toplevel)
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 #-------------------------------------------------------------------------------
 # setup host environment
@@ -21,17 +21,17 @@ case "${PYTORCH_VERSION}" in
 esac
 module list
 
-envname="pytorch-${PYTORCH_VERSION}-${NCAR_BUILD_ENV}"
-envdir="${top_dir}/${envname}"
+env_name="pytorch-${PYTORCH_VERSION}-${NCAR_BUILD_ENV}"
+env_dir="${script_dir}/${env_name}"
 
 echo "PYTORCH_VERSION=${PYTORCH_VERSION}"
 echo "NCAR_BUILD_ENV=${NCAR_BUILD_ENV}"
-echo "envdir=${envdir}"
+echo "env_dir=${env_dir}"
 
 
 #-------------------------------------------------------------------------------
 # clone pytorch source if needed
-make -s -C ${top_dir} pytorch-${PYTORCH_VERSION}
+make -s -C ${script_dir} pytorch-${PYTORCH_VERSION}
 
 
 
@@ -40,16 +40,18 @@ make -s -C ${top_dir} pytorch-${PYTORCH_VERSION}
 init_conda_env()
 {
     # quick init / return if exists
-    if [ -d ${envdir} ]; then
-        conda activate ${envdir}
+    if [ -d ${env_dir} ]; then
+        conda activate ${env_dir}
         return
     fi
 
     # otherwise create a conda env, taking pytorch pip requirements.txt from the
-    # pytorch source tree
-    envfile=${envdir}.yaml
+    # pytorch source tree - if we can write to it!
+    [ -w ${script_dir} ] || { echo "cannot write to ${script_dir} to create ${env_dir}!!"; exit 1; }
 
-    cat <<EOF > ${envfile}
+    env_file=${env_dir}.yaml
+
+    cat <<EOF > ${env_file}
 channels:
   - conda-forge
   - pytorch
@@ -66,18 +68,18 @@ dependencies:
     - mkl-include
     - mkl-static
     - mpi4py
-    - -r ${top_dir}/pytorch-${PYTORCH_VERSION}/requirements.txt
+    - -r ${script_dir}/pytorch-${PYTORCH_VERSION}/requirements.txt
 EOF
 
-    cat ${envfile}
-    echo "creating ${envdir}..."
+    cat ${env_file}
+    echo "creating ${env_dir}..."
     conda env \
           create \
-          -f ${envfile} \
-          -p ${envdir} \
+          -f ${env_file} \
+          -p ${env_dir} \
         || exit 1
 
-    conda activate ${envdir}
+    conda activate ${env_dir}
     return
 }
 
