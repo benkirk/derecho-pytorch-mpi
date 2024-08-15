@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-export PYTORCH_VERSION="${PYTORCH_VERSION:-v2.3.1}"
+export PYTORCH_VERSION="${PYTORCH_VERSION:-v2.4.0}"
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -21,26 +21,19 @@ case "${PYTORCH_VERSION}" in
 esac
 module list
 
-env_name="pytorch-${PYTORCH_VERSION}-${NCAR_BUILD_ENV}"
+env_name="env-pytorch-${PYTORCH_VERSION}-${NCAR_BUILD_ENV}"
 env_dir="${script_dir}/${env_name}"
 
 echo "PYTORCH_VERSION=${PYTORCH_VERSION}"
 echo "NCAR_BUILD_ENV=${NCAR_BUILD_ENV}"
 echo "env_dir=${env_dir}"
 
-
-#-------------------------------------------------------------------------------
-# build nccl with AWS libfabric plugin if needed
-make -s -C ${script_dir} nccl-ofi
-
 #-------------------------------------------------------------------------------
 # clone pytorch source if needed
 make -s -C ${script_dir} pytorch-${PYTORCH_VERSION}
 
-
-
 #-------------------------------------------------------------------------------
-# function to activate conda env (create if needed)
+# function to activate conda env (or, create if needed)
 init_conda_env()
 {
     # quick init / return if exists
@@ -83,16 +76,41 @@ EOF
           -p ${env_dir} \
         || exit 1
 
+    mkdir -p ${env_dir}/etc/conda/activate.d ${env_dir}/etc/conda/deactivate.d
+
+    cat <<EOF > ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
+#-------------------------------------------------------------------------------
+# defaults for runtime variables we want when operating inside the
+# ${env_name} conda environment
+
+# pytorch manage visible devices
+unset CUDA_VISIBLE_DEVICES
+
+# Cray-MPICH GPU-Centric bits
+#export MPICH_GPU_MANAGED_MEMORY_SUPPORT_ENABLED=1
+export MPICH_GPU_SUPPORT_ENABLED=1
+export MPICH_OFI_NIC_POLICY=GPU
+
+# NCCL with AWS-OFI-Plugin
+export FI_CXI_DISABLE_HOST_REGISTER=1
+export NCCL_CROSS_NIC=1
+export NCCL_SOCKET_IFNAME=hsn
+export NCCL_NET_GDR_LEVEL=PHB
+export NCCL_NET="AWS Libfabric"
+export NCCL_DEBUG=WARN
+#-------------------------------------------------------------------------------
+EOF
+    cat ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
     conda activate ${env_dir}
     return
 }
 
 init_conda_env
 
+
 #-------------------------------------------------------------------------------
-
-unset CUDA_VISIBLE_DEVICES # <--let pytorch manage visible devices
-
+echo "#--> setting buildtime variables we want when compiling pytorch"
+set -x
 export MPICC=$(which mpicc)
 export MPICXX=$(which mpicxx)
 export CC=${MPICC}
@@ -105,9 +123,6 @@ export CXXFLAGS="${CFLAGS}"
 export MAX_JOBS=64
 
 export USE_MPI=1
-export MPICH_GPU_MANAGED_MEMORY_SUPPORT_ENABLED=1
-export MPICH_GPU_SUPPORT_ENABLED=1
-export MPICH_OFI_NIC_POLICY=GPU
 
 export USE_CUDA=1 # <-- https://github.com/pytorch/pytorch#from-source
 export TORCH_CUDA_ARCH_LIST="8.0" # <-- A100s
@@ -121,14 +136,11 @@ export USE_CUSPARSELT=1
 
 export USE_SYSTEM_NCCL=1
 export NCCL_ROOT=${script_dir}/nccl-ofi/install
-export LD_LIBRARY_PATH=${NCCL_ROOT}/lib:${NCCL_ROOT}/aws-ofi-nccl-plugin/lib:${LD_LIBRARY_PATH}
-
-export FI_CXI_DISABLE_HOST_REGISTER=1
-export NCCL_CROSS_NIC=1
-export NCCL_SOCKET_IFNAME=hsn
-export NCCL_NET_GDR_LEVEL=PHB
-export NCCL_NET="AWS Libfabric"
+export NCCL_LIB_DIR=${NCCL_ROOT}/lib
+export NCCL_INCLUDE_DIR=${NCCL_ROOT}/include
 
 export BLAS=MKL
 
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
+set +x
+#-------------------------------------------------------------------------------

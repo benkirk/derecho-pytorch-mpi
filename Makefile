@@ -26,6 +26,6 @@ build-pbs:
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
 	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=4:00:00 -l select=1:ncpus=64:ngpus=4 -- make pytorch-$(PYTORCH_VERSION)/.build.stamp
 
-nccl-ofi/install/aws-ofi-nccl-plugin/lib/libnccl-net.so nccl-ofi/install/lib/libnccl.so nccl-ofi: \
-	utils/build_nccl-ofi-plugin.sh utils/nccl-ofi-dependencies.txt
+nccl-ofi/install/lib/libnccl-net.so nccl-ofi/install/lib/libnccl.so nccl-ofi: \
+	utils/build_nccl-ofi-plugin.sh
 	./$<
