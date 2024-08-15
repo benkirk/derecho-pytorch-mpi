@@ -16,7 +16,8 @@ size = comm.Get_size()
 dist.init_process_group(backend='mpi')
 
 if 0 == rank:
-    print(torch.cuda.device_count())
+    print('Running on {} MPI Ranks'.format(size))
+    print('torch.cuda.device_count()={}'.format(torch.cuda.device_count()))
     print(torch.__config__.show())
     print(torch.__config__.parallel_info())
 

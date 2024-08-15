@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-export PYTORCH_VERSION="${PYTORCH_VERSION:-v2.4.0}"
+export PYTORCH_VERSION="${PYTORCH_VERSION:-v2.3.1}"
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
