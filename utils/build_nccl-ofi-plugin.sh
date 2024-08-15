@@ -14,7 +14,6 @@ module load gcc/12.2.0 cuda/12.2.1 >/dev/null 2>&1
 module list
 
 export INSTALL_DIR=${top_dir}/nccl-ofi/${NCAR_BUILD_ENV}
-export PLUGIN_DIR=${INSTALL_DIR}/aws-ofi-nccl-plugin
 export NCCL_HOME=${INSTALL_DIR}
 export LIBFABRIC_HOME=/opt/cray/libfabric/1.15.2.0
 export GDRCOPY_HOME=/usr
@@ -43,16 +42,11 @@ cd ${build_dir} || exit 1
 git clone -b v1.6.0 https://github.com/aws/aws-ofi-nccl.git || exit 1
 cd aws-ofi-nccl || exit 1
 ./autogen.sh || exit 1
-./configure --with-cuda=${CUDA_HOME} --with-libfabric=${LIBFABRIC_HOME} --prefix=${PLUGIN_DIR} --with-gdrcopy=${GDRCOPY_HOME} --disable-tests || exit 1
+./configure --with-cuda=${CUDA_HOME} --with-libfabric=${LIBFABRIC_HOME} --prefix=${INSTALL_DIR} --with-gdrcopy=${GDRCOPY_HOME} --disable-tests || exit 1
 make -j ${N} install  || exit 1
 
 cd ${script_dir} || exit 1
 rm -rf ${build_dir} || exit 1
-
-echo "========== PREPARING DEPENDENCIES =========="
-set -x
-mkdir -p ${PLUGIN_DIR}/deps/lib
-cp -P $(cat ${script_dir}/nccl-ofi-dependencies.txt) ${PLUGIN_DIR}/deps/lib/
 
 # symlink latest installed varsion path
 cd ${INSTALL_DIR}/.. && rm -f ./install && ln -s ${NCAR_BUILD_ENV} ./install
