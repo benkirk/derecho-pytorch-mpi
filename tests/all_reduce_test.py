@@ -17,7 +17,8 @@ try:
     # independent of mpiexec implementation)
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
-    LOCAL_RANK = int(os.environ["PMI_LOCAL_RANK"])
+    shmem_comm = comm.Split_type(MPI.COMM_TYPE_SHARED)
+    LOCAL_RANK = shmem_comm.Get_rank()
     WORLD_SIZE = comm.Get_size()
     WORLD_RANK = comm.Get_rank()
 
