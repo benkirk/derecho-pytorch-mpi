@@ -15,9 +15,11 @@ try:
     # Environment variables set by cray-mpich's mpiexec
     # (refactor later to get these from the MPI communicator,
     # independent of mpiexec implementation)
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
     LOCAL_RANK = int(os.environ["PMI_LOCAL_RANK"])
-    WORLD_SIZE = int(os.environ["PMI_SIZE"])
-    WORLD_RANK = int(os.environ["PMI_RANK"])
+    WORLD_SIZE = comm.Get_size()
+    WORLD_RANK = comm.Get_rank()
 
 except:
     # Environment variables set by torch.distributed.launch
@@ -85,7 +87,10 @@ def run_all_reduce(backend, timing_list):
 
 
 def init_processes(backend):
-    dist.init_process_group(backend, rank=WORLD_RANK, world_size=WORLD_SIZE)
+    if backend == "mpi":
+        dist.init_process_group(backend)
+    else:
+        dist.init_process_group(backend, rank=WORLD_RANK, world_size=WORLD_SIZE)
 
     # Warmup runs
     warmup_runs = 2
