@@ -1,17 +1,17 @@
 # Building Pytorch on NCAR's Derecho supercomputer with a CUDA-Aware Cray-MPICH backend
 
-This repository implements a general process for building recent versions of `pytorch` (~circa 2024) on Derecho from source. 
+This repository implements a general process for building recent versions of `pytorch` (~circa 2024) on Derecho from source.
 The purpose is to build a version of `pytorch` to use in *distributed* ML-training workflows making optimal use of the Cray-EX Slingshot 11 (SS11) interconnect.
 
-Distributed-ML in general and SS11 in particular pose some challenges that drive us to build from source rather than choose any of the available Pytorch versions 
+Distributed-ML in general and SS11 in particular pose some challenges that drive us to build from source rather than choose any of the available Pytorch versions
 from e.g `conda-forge`.  Specifically:
 - We want to enable a CUDA-Aware MPI backend using `cray-mpich`.  (Currently for `pytorch` any level of MPI support [requires building from source](https://pytorch.org/tutorials/intermediate/dist_tuto.html#communication-backends).)
-- We want to use a SS11-optimized NCCL.  As of this writing, this requires compliling NCCL from source along with using the [AWS OFI NCCL Plugin](https://github.com/aws/aws-ofi-nccl) at specific versions and with specific runtime environment variable settings.
-    - **Note that when installing `pytorch` from `conda-forge`, a non-optimal NCCL will generally be installed.** *The application may appear functional but performance will be much degraded for distributed trainig.*
-    - Therefore the approach taken here is to install the desired NCCL_plugin, and point `pytorch` to this version at build time to minimize the likelihood of using a non-optimal version. 
+- We want to use a SS11-optimized NCCL.  As of this writing, this requires compiling NCCL from source along with using the [AWS OFI NCCL Plugin](https://github.com/aws/aws-ofi-nccl) at specific versions and with specific runtime environment variable settings.
+    - **Note that when installing `pytorch` from `conda-forge`, a non-optimal NCCL will generally be installed.** *The application may appear functional but performance will be much degraded for distributed training.*
+    - Therefore the approach taken here is to install the desired NCCL_plugin, and point `pytorch` to this version at build time to minimize the likelihood of using a non-optimal version.
 
-## User Installation 
-### Quickstart
+## User Installation
+### Quick start
 
 1. Clone this repo.
    ```bash
@@ -25,7 +25,7 @@ from e.g `conda-forge`.  Specifically:
    # build default version of pytorch (currently v2.3.1):
    make build-pytorch-v2.3.1-pbs
 
-   # build pytorch-v2.4.0, aslso supported:
+   # build pytorch-v2.4.0, also supported:
    export PYTORCH_VERSION=v2.4.0
    make build-pytorch-v2.4.0-pbs
    ```
@@ -45,24 +45,24 @@ from e.g `conda-forge`.  Specifically:
    ```
 
 ### Customizing the resulting `conda` environment
-The process outlined above will create a minimal `conda` environment in the current directory containing the `pytorch` build dependencies and the installed version of `pytorch` itself.  The package list is defined in `config_env.sh` - users may elect to add packages to the embedded `conda.yaml` file, or later through the typical `conda install` command from within the environment. 
+The process outlined above will create a minimal `conda` environment in the current directory containing the `pytorch` build dependencies and the installed version of `pytorch` itself.  The package list is defined in `config_env.sh` - users may elect to add packages to the embedded `conda.yaml` file, or later through the typical `conda install` command from within the environment.
 
 ## Developer Details
 
 ### Important files
-1. `config_env.sh`: Must be sourced to properly build `pytorch`. 
+1. `config_env.sh`: Must be sourced to properly build `pytorch`.
     - Sourcing this file will activate the appropriate `env-pytorch=${PYTORCH_VERSION}-[...]` `conda` environment from the same directory.
     - If the `conda` environment does not exist, it will create it.  Which in turn requires checking out the `pytorch` source tree, as this is required to properly define the required `conda` build environment.
     - Therefore this script controls the packages added initially to the `conda` environment.
     - Defines environment variables required to build `pytorch`.
     - Creates an activation script `env-pytorch-${PYTORCH_VERSION}-[...]/etc/conda/activate.d/derecho-env_vars.sh` with preferred runtime settings.
-    - After installation, the resulting `conda` enviromments can be activated directly without the need for `config_env.sh`, and should be compatible with the default module environment on Derecho.
+    - After installation, the resulting `conda` environments can be activated directly without the need for `config_env.sh`, and should be compatible with the default module environment on Derecho.
         - Re-sourcing this script is not a problem if desired, and will result in the same module environment used to build `pytorch`.
-2. `Makefile` contains convenient rules for automation and reporoducibilty.  Uses the environment variables `PYTORCH_VERSION` and `PBS_ACCOUNT`, with sensible defaults for each.
-3. `patches/${PYTORCH_VERSION}/*`: At present the `Makefile` assumes the source will need to be patched.  Version-specific patches are located in this directory tree, and are applied in `*`-wildcard order. (The build will likely break if you try version and do not have any patchfiles - to be improved...)
+2. `Makefile` contains convenient rules for automation and a reproducible process.  Uses the environment variables `PYTORCH_VERSION` and `PBS_ACCOUNT`, with sensible defaults for each.
+3. `patches/${PYTORCH_VERSION}/*`: At present the `Makefile` assumes the source will need to be patched.  Version-specific patches are located in this directory tree, and are applied in `*`-wildcard order. (The build will likely break if you try version and do not have any patch files - to be improved...)
 4. `utils/build_nccl-ofi-plugin.sh`: builds a compatible NCCL+AWS OFI plugin for use on Derecho with Cray's `libfabric`.  Must be updated periodically with underlying `libfabric` version changes.
 
 ### Pytorch, CUDA-Awareness, and Cray-MPICH
-`pytorch-v2` source only supports CUDA-Aware MPI backend when running under OpenMPI.  This is due to some overzealous config settings that probe for CUDA support using `MPIX_...` extensions not available with Cray-MPICH, and implemented inside `#ifdef OPEN_MPI ...` anyway.  Where these tests occur, when they fail they fall back to assuming the MPI *is not* CUDA-Aware.  
+`pytorch-v2` source only supports CUDA-Aware MPI backend when running under OpenMPI.  This is due to some overzealous config settings that probe for CUDA support using `MPIX_...` extensions not available with Cray-MPICH, and implemented inside `#ifdef OPEN_MPI ...` anyway.  Where these tests occur, when they fail they fall back to assuming the MPI *is not* CUDA-Aware.
 
 Fortunately the fix is fairly straightforward, find all the places these checks occur and instead fall back to assuming MPI *is*  CUDA-Aware. For example, see `patches/v2.3.1/01-cuda-aware-mpi`.
