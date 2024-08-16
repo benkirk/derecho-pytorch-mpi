@@ -87,6 +87,7 @@ def run_all_reduce(backend, timing_list):
 
 
 def init_processes(backend):
+    # MPI backend infers sizes: torch/distributed/distributed_c10d.py:1289: UserWarning: For MPI backend, world_size (2) and rank (1) are ignored since they are assigned by the MPI runtime.
     if backend == "mpi":
         dist.init_process_group(backend)
     else:
