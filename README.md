@@ -10,7 +10,6 @@ from e.g `conda-forge`.  Specifically:
     - **Note that when installing `pytorch` from `conda-forge`, a non-optimal NCCL will generally be installed.** *The application may appear functional but performance will be much degraded for distributed trainig.*
     - Therefore the approach taken here is to install the desired NCCL_plugin, and point `pytorch` to this version at build time to minimize the likelihood of using a non-optimal version. 
 
-
 ## User Installation 
 ### Quickstart
 
@@ -63,3 +62,7 @@ The process outlined above will create a minimal `conda` environment in the curr
 3. `patches/${PYTORCH_VERSION}/*`: At present the `Makefile` assumes the source will need to be patched.  Version-specific patches are located in this directory tree, and are applied in `*`-wildcard order. (The build will likely break if you try version and do not have any patchfiles - to be improved...)
 4. `utils/build_nccl-ofi-plugin.sh`: builds a compatible NCCL+AWS OFI plugin for use on Derecho with Cray's `libfabric`.  Must be updated periodically with underlying `libfabric` version changes.
 
+### Pytorch, CUDA-Awareness, and Cray-MPICH
+`pytorch-v2` source only supports CUDA-Aware MPI backend when running under OpenMPI.  This is due to some overzealous config settings that probe for CUDA support using `MPIX_...` extensions not available with Cray-MPICH, and implemented inside `#ifdef OPEN_MPI ...` anyway.  Where these tests occur, when they fail they fall back to assuming the MPI *is not* CUDA-Aware.  
+
+Fortunately the fix is fairly straightforward, find all the places these checks occur and instead fall back to assuming MPI *is*  CUDA-Aware. For example, see `patches/v2.3.1/01-cuda-aware-mpi`.
