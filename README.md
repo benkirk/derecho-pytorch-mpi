@@ -49,3 +49,17 @@ from e.g `conda-forge`.  Specifically:
 The process outlined above will create a minimal `conda` environment in the current directory containing the `pytorch` build dependencies and the installed version of `pytorch` itself.  The package list is defined in `config_env.sh` - users may elect to add packages to the embedded `conda.yaml` file, or later through the typical `conda install` command from within the environment. 
 
 ## Developer Details
+
+### Important files
+1. `config_env.sh`: Must be sourced to properly build `pytorch`. 
+    - Sourcing this file will activate the appropriate `env-pytorch=${PYTORCH_VERSION}-[...]` `conda` environment from the same directory.
+    - If the `conda` environment does not exist, it will create it.  Which in turn requires checking out the `pytorch` source tree, as this is required to properly define the required `conda` build environment.
+    - Therefore this script controls the packages added initially to the `conda` environment.
+    - Defines environment variables required to build `pytorch`.
+    - Creates an activation script `env-pytorch-${PYTORCH_VERSION}-[...]/etc/conda/activate.d/derecho-env_vars.sh` with preferred runtime settings.
+    - After installation, the resulting `conda` enviromments can be activated directly without the need for `config_env.sh`, and should be compatible with the default module environment on Derecho.
+        - Re-sourcing this script is not a problem if desired, and will result in the same module environment used to build `pytorch`.
+2. `Makefile` contains convenient rules for automation and reporoducibilty.  Uses the environment variables `PYTORCH_VERSION` and `PBS_ACCOUNT`, with sensible defaults for each.
+3. `patches/${PYTORCH_VERSION}/*`: At present the `Makefile` assumes the source will need to be patched.  Version-specific patches are located in this directory tree, and are applied in `*`-wildcard order. (The build will likely break if you try version and do not have any patchfiles - to be improved...)
+4. `utils/build_nccl-ofi-plugin.sh`: builds a compatible NCCL+AWS OFI plugin for use on Derecho with Cray's `libfabric`.  Must be updated periodically with underlying `libfabric` version changes.
+
