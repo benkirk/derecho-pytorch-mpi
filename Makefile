@@ -7,16 +7,20 @@ PYTORCH_VERSION ?= v2.3.1
 pytorch-$(PYTORCH_VERSION):
 	rm -rf $@ $@.tmp
 	git clone --depth 1 --branch $(PYTORCH_VERSION) https://github.com/pytorch/pytorch $@.tmp
-	cd $@.tmp && for patchfile in ../patches/$(PYTORCH_VERSION)/*;\
-	  do patch -p1 < $$patchfile ;\
-	done
+	if [ -d ./patches/$(PYTORCH_VERSION) ]; then \
+	  echo "Patching source..." ;\
+	  cd $@.tmp ;\
+	  for patchfile in ../patches/$(PYTORCH_VERSION)/*; do \
+	    patch -p1 < $$patchfile ;\
+	  done ;\
+	fi
 	cd $@.tmp && git submodule update --init --recursive --depth 1
 	mv $@.tmp $@
 
-pytorch-$(PYTORCH_VERSION)/.build.stamp: pytorch-$(PYTORCH_VERSION)  Makefile config_env.sh nccl-ofi
-	rm -f $@
+pytorch-$(PYTORCH_VERSION)/.build.stamp: pytorch-$(PYTORCH_VERSION) Makefile config_env.sh nccl-ofi
+	rm -f $@ pytorch-$(PYTORCH_VERSION)/build/install_manifest.txt
 	source config_env.sh && cd pytorch-$(PYTORCH_VERSION) && python setup.py install | tee install.log
-	date >> $@
+	[ -f pytorch-$(PYTORCH_VERSION)/build/install_manifest.txt ] && date >> $@
 
 clean-pytorch-$(PYTORCH_VERSION): pytorch-$(PYTORCH_VERSION)
 	cd $< && git clean -xdf .

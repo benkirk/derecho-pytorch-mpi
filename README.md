@@ -59,7 +59,7 @@ The process outlined above will create a minimal `conda` environment in the curr
     - After installation, the resulting `conda` environments can be activated directly without the need for `config_env.sh`, and should be compatible with the default module environment on Derecho.
         - Re-sourcing this script is not a problem if desired, and will result in the same module environment used to build `pytorch`.
 2. `Makefile` contains convenient rules for automation and a reproducible process.  Uses the environment variables `PYTORCH_VERSION` and `PBS_ACCOUNT`, with sensible defaults for each.
-3. `patches/${PYTORCH_VERSION}/*`: At present the `Makefile` assumes the source will need to be patched.  Version-specific patches are located in this directory tree, and are applied in `*`-wildcard order. (The build will likely break if you try version and do not have any patch files - to be improved...)
+3. `patches/${PYTORCH_VERSION}/*`: Any required version-specific patches are located in this directory tree, and are applied in `*`-wildcard order.
 4. `utils/build_nccl-ofi-plugin.sh`: builds a compatible NCCL+AWS OFI plugin for use on Derecho with Cray's `libfabric`.  Must be updated periodically with underlying `libfabric` version changes.
 
 ### Pytorch, CUDA-Awareness, and Cray-MPICH

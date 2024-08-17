@@ -1,0 +1,13 @@
+diff --git a/aten/src/ATen/native/sparse/cuda/cuSPARSELtOps.cpp b/aten/src/ATen/native/sparse/cuda/cuSPARSELtOps.cpp
+index 701aca6..5da06b2 100644
+--- a/aten/src/ATen/native/sparse/cuda/cuSPARSELtOps.cpp
++++ b/aten/src/ATen/native/sparse/cuda/cuSPARSELtOps.cpp
+@@ -150,7 +150,7 @@ at::Tensor _cslt_sparse_mm(
+     case at::ScalarType::Float:
+         input_type = CUDA_R_32F;
+         output_type = CUDA_R_32F;
+-        compute_type = CUSPARSE_COMPUTE_TF32;
++        compute_type = CUSPARSE_COMPUTE_32F; // was CUSPARSE_COMPUTE_TF32, see https://github.com/pytorch/pytorch/issues/115987
+         break;
+     default:
+         TORCH_CHECK(false, "Unsupported dtype for cuSPARSE compressed matrix multiplication.");
