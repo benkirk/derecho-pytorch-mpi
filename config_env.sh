@@ -10,25 +10,38 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 module --force purge
 module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 conda/latest cuda/12.2.1
 case "${PYTORCH_VERSION}" in
+    # see https://github.com/pytorch/vision for torch & vision compatibility
     *"v2.4"*)
         module load cudnn/9.2.0.82-12
+        export TORCHVISION_VERSION="0.19"
+        ;;
+    *"v2.3"*)
+        module load cudnn/8.8.1.3-12
+        export TORCHVISION_VERSION="0.18"
+        ;;
+    *"v2.2"*)
+        module load cudnn/8.8.1.3-12
+        export TORCHVISION_VERSION="0.17"
         ;;
     *)
-        module load cudnn/8.8.1.3-12
+        echo "ERROR: unknown / unsupported PYTORCH_VERSION: ${PYTORCH_VERSION}"
+        exit 1
         ;;
 esac
 module list
 
-env_name="env-pytorch-${PYTORCH_VERSION}-${NCAR_BUILD_ENV}"
+env_name="env-pytorch-${PYTORCH_VERSION}-torchvision-v${TORCHVISION_VERSION}-${NCAR_BUILD_ENV}"
 env_dir="${script_dir}/${env_name}"
 
 echo "PYTORCH_VERSION=${PYTORCH_VERSION}"
+echo "TORCHVISION_VERSION=${TORCHVISION_VERSION}"
 echo "NCAR_BUILD_ENV=${NCAR_BUILD_ENV}"
 echo "env_dir=${env_dir}"
 
 #-------------------------------------------------------------------------------
 # clone pytorch source if needed
 make -s -C ${script_dir} pytorch-${PYTORCH_VERSION}
+make -s -C ${script_dir} vision-v${TORCHVISION_VERSION}
 
 #-------------------------------------------------------------------------------
 # function to activate conda env (or, create if needed)
@@ -52,9 +65,19 @@ channels:
   - pytorch
   - base
 dependencies:
+  - expecttest    # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+  - flake8        # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+  - typing        # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+  - mypy          # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+  - pytest        # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+  - pytest-mock   # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+  - scipy         # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+  - requests      # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
   - ccache
   - cmake
   - cusparselt
+  - libpng        # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#development-installation
+  - libjpeg-turbo # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#development-installation
   - magma-cuda121 # <-- https://github.com/pytorch/pytorch?tab=readme-ov-file#install-dependencies
   - ninja
   - python=3.12
@@ -64,6 +87,7 @@ dependencies:
     - mkl-static
     - mpi4py
     - -r ${script_dir}/pytorch-${PYTORCH_VERSION}/requirements.txt
+    #- -r ${script_dir}/vision-requirements.txt
 EOF
 
     cat ${env_file}
@@ -140,5 +164,7 @@ export NCCL_INCLUDE_DIR=${NCCL_ROOT}/include
 export BLAS=MKL
 
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
+
+export FORCE_CUDA=1 # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
 set +x
 #-------------------------------------------------------------------------------

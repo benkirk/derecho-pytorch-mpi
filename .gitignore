@@ -3,3 +3,4 @@ env-pytorch*/
 env-pytorch-*-*.yaml
 nccl-ofi/
 pytorch-v*/
+vision-v*/
