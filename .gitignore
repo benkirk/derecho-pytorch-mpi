@@ -1,6 +1,8 @@
 *~
-env-pytorch*/
-env-pytorch-*-*.yaml
+env-*pytorch*/
+env-*pytorch-*-*.yaml
 nccl-ofi/
 pytorch-v*/
 vision-v*/
+distributed-pytorch-hpc/
+miles-credit/
