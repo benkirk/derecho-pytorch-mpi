@@ -3,7 +3,12 @@ PBS_ACCOUNT     ?= SCSG0001
 PYTORCH_VERSION ?= 2.3.1
 TORCHVISION_VERSION ?= 0.18.1
 
-.PHONY: clean clean-pytorch-v$(PYTORCH_VERSION) clean-vision-v$(TORCHVISION_VERSION) build-pytorch-v$(PYTORCH_VERSION)-pbs
+.PHONY: clean \
+        clean-pytorch-v$(PYTORCH_VERSION) \
+	clean-vision-v$(TORCHVISION_VERSION) \
+	build-pbs \
+	build-vision-v$(TORCHVISION_VERSION)-pbs \
+	build-pytorch-v$(PYTORCH_VERSION)-pbs
 
 # checkout / patch source code targets
 pytorch-v$(PYTORCH_VERSION):
@@ -24,6 +29,7 @@ vision-v$(TORCHVISION_VERSION):
 	git clone  --depth 1 --branch v$(TORCHVISION_VERSION) https://github.com/pytorch/vision.git $@.tmp
 	mv $@.tmp $@
 
+# clean targets
 clean-pytorch-v$(PYTORCH_VERSION): pytorch-v$(PYTORCH_VERSION)
 	cd $< && git clean -xdf .
 
@@ -44,9 +50,11 @@ pytorch-v$(PYTORCH_VERSION)/.wheel.stamp: pytorch-v$(PYTORCH_VERSION) Makefile c
 	source config_env.sh && cd pytorch-v$(PYTORCH_VERSION) && python setup.py bdist_wheel | tee wheel.log
 	[ -f $</build/install_manifest.txt ] && date >> $@
 
+# specifically *unset* PYTORCH_VERSION during build, otherwise torchvision will attempt to
+# require that, match closest, and download something.  Which we do not want.
 vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) pytorch-v$(PYTORCH_VERSION)/.install.stamp
-	source config_env.sh && cd vision-v$(TORCHVISION_VERSION) && python setup.py install | tee install.log
-	[ -f $</build/install_manifest.txt ] && date >> $@
+	source config_env.sh && cd vision-v$(TORCHVISION_VERSION) && unset PYTORCH_VERSION && python setup.py install | tee install.log
+	[ -d $</dist ] && date >> $@
 
 # build under PBS with qcmd. Intended to be run on a login node.
 # first make clean; this will ensure we have the source tree.  This will run on a login node.
@@ -54,16 +62,29 @@ vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) py
 # the requisite conda env. Finally; use qcmd to launch the build rule on a dedicated GPU node.
 # (use Brian's qcmd wrapper at the moment due to the qsub -V problem...)
 build-pytorch-v$(PYTORCH_VERSION)-pbs: config_env.sh
-	make clean-pytorch-v$(PYTORCH_VERSION)
+	$(MAKE) clean-pytorch-v$(PYTORCH_VERSION)
 	source $< && conda list
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
-	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=4:00:00 -l select=1:ncpus=64:ngpus=4 -- make pytorch-v$(PYTORCH_VERSION)/.install.stamp
+	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp
 
 build-pytorch-v$(PYTORCH_VERSION)-wheel-pbs: config_env.sh
-	make clean-pytorch-v$(PYTORCH_VERSION)
+	$(MAKE) clean-pytorch-v$(PYTORCH_VERSION)
 	source $< && conda list
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
-	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=4:00:00 -l select=1:ncpus=64:ngpus=4 -- make pytorch-v$(PYTORCH_VERSION)/.wheel.stamp
+	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.wheel.stamp
+
+build-vision-v$(TORCHVISION_VERSION)-pbs: config_env.sh
+	$(MAKE) clean-vision-v$(TORCHVISION_VERSION)
+	source $< && conda list
+	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
+	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) vision-v$(TORCHVISION_VERSION)/.install.stamp
+
+# umbrella build-pbs rule
+build-pbs: config_env.sh
+	$(MAKE) clean
+	source $< && conda list
+	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
+          qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp vision-v$(TORCHVISION_VERSION)/.install.stamp
 
 nccl-ofi/install/lib/libnccl-net.so nccl-ofi/install/lib/libnccl.so nccl-ofi: \
 	utils/build_nccl-ofi-plugin.sh

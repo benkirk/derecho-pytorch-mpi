@@ -9,6 +9,8 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # setup host environment
 module --force purge
 module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 conda/latest cuda/12.2.1
+export CONDA_OVERRIDE_CUDA="12.2"
+
 case "${PYTORCH_VERSION}" in
     # see https://github.com/pytorch/vision for torch & vision compatibility
     "2.4"*)
@@ -30,7 +32,8 @@ case "${PYTORCH_VERSION}" in
 esac
 module list
 
-env_name="env-credit-pytorch-v${PYTORCH_VERSION}-torchvision-v${TORCHVISION_VERSION}-${NCAR_BUILD_ENV}"
+mkdir -p envs
+env_name="envs/credit-pytorch-v${PYTORCH_VERSION}-${NCAR_BUILD_ENV}"
 env_dir="${script_dir}/${env_name}"
 
 echo "PYTORCH_VERSION=${PYTORCH_VERSION}"
@@ -75,7 +78,7 @@ dependencies:
   - dask-jobqueue
   - distributed
   - expecttest!=0.2.0
-  - ffmpeg
+  - ffmpeg<=5
   - filelock
   - flake8
   - fsspec
@@ -89,6 +92,8 @@ dependencies:
   - lintrunner
   - magma-cuda121
   - matplotlib
+  - mpich=3.4=external_* # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
+  #- mpich=3 # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
   - mypy
   - netcdf4
   - networkx
@@ -127,6 +132,7 @@ dependencies:
     - segmentation-models-pytorch
     - timm>=0.9.2
     - torch==${PYTORCH_VERSION} # <-- Pinned to the same version we will install later (and overwrite this one...)
+    - torchvision==${TORCHVISION_VERSION}
     - torch-harmonics
     - torch_geometric
     - torchsummary
@@ -216,12 +222,18 @@ export NCCL_DEBUG=WARN
 #-------------------------------------------------------------------------------
 EOF
     echo "Removing unwanted bits - to reinstall later..."
-    for lib in "libtorch.so*" "libnccl.so*"; do
+    for lib in "libtorch*.so*" "libnccl.so*"; do
         find ${env_dir} -name ${lib} -print0 | xargs -0 rm -vf
     done
 
+    #rm -vrf ${env_dir}/lib/*/site-packages/{torch,torch-${PYTORCH_VERSION}.dist-info}
+    #rm -vrf ${env_dir}/lib/*/site-packages/torchvision*  #{torchvision,torchvision-${TORCHVISION_VERSION}.dist-info,torchvision.libs}
+
     cat ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
     conda activate ${env_dir}
+
+    pip uninstall --yes \
+        torch torchvision
     return
 }
 
@@ -242,7 +254,14 @@ export CMAKE_CXX_COMPILER=${CXX}
 export CFLAGS='-Wno-maybe-uninitialized -Wno-uninitialized -Wno-nonnull'
 export CXXFLAGS="${CFLAGS}"
 
-export MAX_JOBS=64
+#export PYTORCH_BUILD_VERSION="${PYTORCH_VERSION}"
+#export PYTORCH_BUILD_NUMBER=1
+
+export MAX_JOBS=96
+
+export BUILD_TEST=0
+
+export USE_FFMPEG=1
 
 export USE_MPI=1
 
