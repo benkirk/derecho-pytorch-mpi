@@ -277,10 +277,10 @@ export FORCE_CUDA=1 # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTI
 
 #export TORCHVISION_USE_FFMPEG=0
 
-# # versioning the packages for easy identification in a messy environment:
-# export PYTORCH_BUILD_VERSION="${PYTORCH_VERSION}+${NCAR_BUILD_ENV}"
-# export PYTORCH_BUILD_NUMBER=1
-# export TORCHVISION_BUILD_VERSION="${TORCHVISION_VERSION}+${NCAR_BUILD_ENV}"
+# versioning the packages for easy identification in a messy environment:
+export PYTORCH_BUILD_VERSION="${PYTORCH_VERSION}+${NCAR_BUILD_ENV}"
+export PYTORCH_BUILD_NUMBER=1
+export TORCHVISION_BUILD_VERSION="${TORCHVISION_VERSION}+${NCAR_BUILD_ENV_COMPILER}"
 
 set +x
 #-------------------------------------------------------------------------------

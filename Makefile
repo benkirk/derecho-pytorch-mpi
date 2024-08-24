@@ -65,7 +65,7 @@ pytorch-v$(PYTORCH_VERSION)/.wheel.stamp: pytorch-v$(PYTORCH_VERSION) Makefile c
 vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) pytorch-v$(PYTORCH_VERSION)/.install.stamp
 	source config_env.sh ;\
           cd vision-v$(TORCHVISION_VERSION) ;\
-	  echo "$(TORCHVISION_VERSION)+$${NCAR_BUILD_ENV}" > version.txt ;\
+	  echo "$${TORCHVISION_BUILD_VERSION}" > version.txt ;\
           PYTORCH_VERSION="$${PYTORCH_BUILD_VERSION}" ;\
           python setup.py install | tee install.log
 	[ -d $</dist ] && date >> $@
