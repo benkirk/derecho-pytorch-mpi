@@ -56,10 +56,6 @@ pytorch-v$(PYTORCH_VERSION)/.install.stamp: pytorch-v$(PYTORCH_VERSION) Makefile
           python setup.py install | tee install.log
 	[ -f $</build/install_manifest.txt ] && date >> $@
 
-pytorch-v$(PYTORCH_VERSION)/.wheel.stamp: pytorch-v$(PYTORCH_VERSION) Makefile config_env.sh nccl-ofi
-	source config_env.sh && cd pytorch-v$(PYTORCH_VERSION) && python setup.py bdist_wheel | tee wheel.log
-	[ -f $</build/install_manifest.txt ] && date >> $@
-
 # specifically *unset* PYTORCH_VERSION during build, otherwise torchvision will attempt to
 # require that, match closest, and download something.  Which we do not want.
 vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) pytorch-v$(PYTORCH_VERSION)/.install.stamp
@@ -81,11 +77,11 @@ build-pytorch-v$(PYTORCH_VERSION)-pbs: config_env.sh
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
 	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp
 
-build-pytorch-v$(PYTORCH_VERSION)-wheel-pbs: config_env.sh
-	$(MAKE) clean-pytorch-v$(PYTORCH_VERSION)
-	source config_env.sh && conda list
-	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
-	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.wheel.stamp
+# build-pytorch-v$(PYTORCH_VERSION)-wheel-pbs: config_env.sh
+# 	$(MAKE) clean-pytorch-v$(PYTORCH_VERSION)
+# 	source config_env.sh && conda list
+# 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
+# 	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.wheel.stamp
 
 build-vision-v$(TORCHVISION_VERSION)-pbs: config_env.sh
 	$(MAKE) clean-vision-v$(TORCHVISION_VERSION)
