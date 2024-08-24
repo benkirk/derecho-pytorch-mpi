@@ -14,10 +14,10 @@ TORCHVISION_VERSION ?= 0.18.1
 pytorch-v$(PYTORCH_VERSION):
 	rm -rf $@ $@.tmp
 	git clone --depth 1 --branch v$(PYTORCH_VERSION) https://github.com/pytorch/pytorch $@.tmp
-	if [ -d ./patches/v$(PYTORCH_VERSION) ]; then \
+	if [ -d ./patches/pytorch/v$(PYTORCH_VERSION) ]; then \
 	  echo "Patching source..." ;\
 	  cd $@.tmp ;\
-	  for patchfile in ../patches/v$(PYTORCH_VERSION)/*; do \
+	  for patchfile in ../patches/pytorch/v$(PYTORCH_VERSION)/*; do \
 	    patch -p1 < $$patchfile ;\
 	  done ;\
 	fi
@@ -26,7 +26,14 @@ pytorch-v$(PYTORCH_VERSION):
 
 vision-v$(TORCHVISION_VERSION):
 	rm -rf $@ $@.tmp
-	git clone  --depth 1 --branch v$(TORCHVISION_VERSION) https://github.com/pytorch/vision.git $@.tmp
+	git clone  --depth 1 --branch v$(TORCHVISION_VERSION) https://github.com/pytorch/vision $@.tmp
+	if [ -d ./patches/vision/v$(TORCHVISION_VERSION) ]; then \
+	  echo "Patching source..." ;\
+	  cd $@.tmp ;\
+	  for patchfile in ../patches/vision/v$(TORCHVISION_VERSION)/*; do \
+	    patch -p1 < $$patchfile ;\
+	  done ;\
+	fi
 	mv $@.tmp $@
 
 # clean targets
@@ -43,7 +50,10 @@ clean:
 # build targets
 pytorch-v$(PYTORCH_VERSION)/.install.stamp: pytorch-v$(PYTORCH_VERSION) Makefile config_env.sh nccl-ofi
 	rm -f $@ pytorch-v$(PYTORCH_VERSION)/build/install_manifest.txt
-	source config_env.sh && cd pytorch-v$(PYTORCH_VERSION) && python setup.py install | tee install.log
+	source config_env.sh ;\
+          cd pytorch-v$(PYTORCH_VERSION) ;\
+	  echo "$${PYTORCH_BUILD_VERSION}" > version.txt ;\
+          python setup.py install | tee install.log
 	[ -f $</build/install_manifest.txt ] && date >> $@
 
 pytorch-v$(PYTORCH_VERSION)/.wheel.stamp: pytorch-v$(PYTORCH_VERSION) Makefile config_env.sh nccl-ofi
@@ -53,7 +63,11 @@ pytorch-v$(PYTORCH_VERSION)/.wheel.stamp: pytorch-v$(PYTORCH_VERSION) Makefile c
 # specifically *unset* PYTORCH_VERSION during build, otherwise torchvision will attempt to
 # require that, match closest, and download something.  Which we do not want.
 vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) pytorch-v$(PYTORCH_VERSION)/.install.stamp
-	source config_env.sh && cd vision-v$(TORCHVISION_VERSION) && unset PYTORCH_VERSION && python setup.py install | tee install.log
+	source config_env.sh ;\
+          cd vision-v$(TORCHVISION_VERSION) ;\
+	  echo "$(TORCHVISION_VERSION)+$${NCAR_BUILD_ENV}" > version.txt ;\
+          PYTORCH_VERSION="$${PYTORCH_BUILD_VERSION}" ;\
+          python setup.py install | tee install.log
 	[ -d $</dist ] && date >> $@
 
 # build under PBS with qcmd. Intended to be run on a login node.
@@ -63,28 +77,30 @@ vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) py
 # (use Brian's qcmd wrapper at the moment due to the qsub -V problem...)
 build-pytorch-v$(PYTORCH_VERSION)-pbs: config_env.sh
 	$(MAKE) clean-pytorch-v$(PYTORCH_VERSION)
-	source $< && conda list
+	source config_env.sh && conda list
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
 	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp
 
 build-pytorch-v$(PYTORCH_VERSION)-wheel-pbs: config_env.sh
 	$(MAKE) clean-pytorch-v$(PYTORCH_VERSION)
-	source $< && conda list
+	source config_env.sh && conda list
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
 	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.wheel.stamp
 
 build-vision-v$(TORCHVISION_VERSION)-pbs: config_env.sh
 	$(MAKE) clean-vision-v$(TORCHVISION_VERSION)
-	source $< && conda list
+	source config_env.sh && conda list
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
 	  qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) vision-v$(TORCHVISION_VERSION)/.install.stamp
 
 # umbrella build-pbs rule
 build-pbs: config_env.sh
 	$(MAKE) clean
-	source $< && conda list
+	source config_env.sh && conda list
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
-          qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp vision-v$(TORCHVISION_VERSION)/.install.stamp
+          qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 \
+          -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp vision-v$(TORCHVISION_VERSION)/.install.stamp
+	source config_env.sh && python ./tests/credit_imports.py
 
 nccl-ofi/install/lib/libnccl-net.so nccl-ofi/install/lib/libnccl.so nccl-ofi: \
 	utils/build_nccl-ofi-plugin.sh

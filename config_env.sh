@@ -254,37 +254,33 @@ export CMAKE_CXX_COMPILER=${CXX}
 export CFLAGS='-Wno-maybe-uninitialized -Wno-uninitialized -Wno-nonnull'
 export CXXFLAGS="${CFLAGS}"
 
-#export PYTORCH_BUILD_VERSION="${PYTORCH_VERSION}"
-#export PYTORCH_BUILD_NUMBER=1
-
 export MAX_JOBS=96
-
 export BUILD_TEST=0
-
 export USE_FFMPEG=1
-
+export USE_BLAS=MKL
 export USE_MPI=1
-
 export USE_CUDA=1 # <-- https://github.com/pytorch/pytorch#from-source
 export TORCH_CUDA_ARCH_LIST="8.0" # <-- A100s
-
 export USE_CUDNN=1
 export CUDNN_LIBRARY=${NCAR_ROOT_CUDNN}
 export CUDNN_LIB_DIR=${NCAR_ROOT_CUDNN}/lib
 export CUDNN_INCLUDE_DIR=${NCAR_ROOT_CUDNN}/include
-
 export USE_CUSPARSELT=1
-
 export USE_SYSTEM_NCCL=1
 export NCCL_ROOT=${script_dir}/nccl-ofi/install
 export NCCL_LIB_DIR=${NCCL_ROOT}/lib
 export NCCL_INCLUDE_DIR=${NCCL_ROOT}/include
 
-export BLAS=MKL
-
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
 
 export FORCE_CUDA=1 # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+
 #export TORCHVISION_USE_FFMPEG=0
+
+# # versioning the packages for easy identification in a messy environment:
+# export PYTORCH_BUILD_VERSION="${PYTORCH_VERSION}+${NCAR_BUILD_ENV}"
+# export PYTORCH_BUILD_NUMBER=1
+# export TORCHVISION_BUILD_VERSION="${TORCHVISION_VERSION}+${NCAR_BUILD_ENV}"
+
 set +x
 #-------------------------------------------------------------------------------

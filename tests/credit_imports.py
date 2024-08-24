@@ -22,4 +22,8 @@ from torch.distributed.fsdp.sharded_grad_scaler import ShardedGradScaler
 import torchvision
 import mpi4py
 
+
+
 print('All modules imported.')
+print('torch version={}'.format(torch.__version__))
+print('torchvision version={}'.format(torchvision.__version__))
