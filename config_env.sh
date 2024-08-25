@@ -223,7 +223,7 @@ export NCCL_DEBUG=WARN
 #-------------------------------------------------------------------------------
 EOF
     echo "Removing unwanted bits - to reinstall later..."
-    for lib in "libtorch*.so*" "libnccl.so*"; do
+    for lib in "libnccl.so*"; do
         find ${env_dir} -name ${lib} -print0 | xargs -0 rm -vf
     done
 
@@ -233,8 +233,8 @@ EOF
     cat ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
     conda activate ${env_dir}
 
-    pip uninstall --yes \
-        torch torchvision
+    #pip uninstall --yes \
+    #    torch torchvision
     return
 }
 
@@ -247,7 +247,7 @@ init_conda_env
 
 #-------------------------------------------------------------------------------
 echo "#--> setting buildtime variables we want when compiling pytorch"
-set -x
+#set -x
 export CC=${MPICC}
 export CXX=${MPICXX}
 export CMAKE_C_COMPILER=${CC}
