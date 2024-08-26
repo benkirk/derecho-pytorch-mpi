@@ -1,13 +1,18 @@
-SHELL           := /bin/bash
 PBS_ACCOUNT     ?= SCSG0001
 PYTORCH_VERSION ?= 2.3.1
 TORCHVISION_VERSION ?= 0.18.1
 
-pip_install_flags := --no-build-isolation #--no-deps #-vv
-pkg_install_cmd := python -m pip install $(pip_install_flags)
+# require make to use a more capable shell
+SHELL := /bin/bash
+
+# setup some make variables for controlling installation, packaging rules
+pip_install_flags := --no-build-isolation #--no-deps -v
+pkg_install_cmd := python -m pip install $(pip_install_flags) .
 #pkg_install_cmd := python setup.py install
-python_build_flags := --no-isolation --verbose --wheel
-pkg_build_cmd := python -m build $(python_build_flags)
+
+python_build_flags := --no-isolation --skip-dependency-check --wheel # --verbose
+pkg_build_cmd := python -m build $(python_build_flags) .
+#pkg_build_cmd := python -m pip wheel $(pip_install_flags) .
 
 .PHONY: clean \
         clean-pytorch-v$(PYTORCH_VERSION) \
@@ -19,7 +24,7 @@ pkg_build_cmd := python -m build $(python_build_flags)
 	build-vision-v$(TORCHVISION_VERSION)-pbs \
 	build-pytorch-v$(PYTORCH_VERSION)-pbs
 
-# checkout / patch source code targets
+# source checkout / patch source code targets
 pytorch-v$(PYTORCH_VERSION):
 	rm -rf $@ $@.tmp
 	git clone --depth 1 --branch v$(PYTORCH_VERSION) https://github.com/pytorch/pytorch $@.tmp
@@ -63,7 +68,7 @@ pytorch-v$(PYTORCH_VERSION)/.install.stamp: pytorch-v$(PYTORCH_VERSION) Makefile
 	  pip uninstall --yes torch ;\
           cd pytorch-v$(PYTORCH_VERSION) ;\
 	  echo "$${PYTORCH_BUILD_VERSION}" > version.txt ;\
-          $(pkg_install_cmd) . | tee install.log \
+          $(pkg_install_cmd) | tee install.log \
             && cp install.log install.stamp && date >> install.stamp \
 	    && mv install.stamp .install.stamp
 
@@ -72,7 +77,7 @@ pytorch-v$(PYTORCH_VERSION)/.build.stamp: pytorch-v$(PYTORCH_VERSION) Makefile c
 	source config_env.sh ;\
           cd pytorch-v$(PYTORCH_VERSION) ;\
 	  echo "$${PYTORCH_BUILD_VERSION}" > version.txt ;\
-          python -m build $(python_build_flags) . | tee build.log \
+          $(pkg_build_cmd) | tee build.log \
             && cp build.log build.stamp && date >> build.stamp \
 	    && mv build.stamp .build.stamp
 
@@ -85,7 +90,7 @@ vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) #p
           cd vision-v$(TORCHVISION_VERSION) ;\
 	  echo "$${TORCHVISION_BUILD_VERSION}" > version.txt ;\
           PYTORCH_VERSION="$${PYTORCH_BUILD_VERSION}" ;\
-          $(pkg_install_cmd) . | tee install.log \
+          $(pkg_install_cmd) | tee install.log \
             && cp install.log install.stamp && date >> install.stamp \
 	    && mv install.stamp .install.stamp
 
@@ -95,7 +100,7 @@ vision-v$(TORCHVISION_VERSION)/.build.stamp: vision-v$(TORCHVISION_VERSION) #pyt
           cd vision-v$(TORCHVISION_VERSION) ;\
 	  echo "$${TORCHVISION_BUILD_VERSION}" > version.txt ;\
           PYTORCH_VERSION="$${PYTORCH_BUILD_VERSION}" ;\
-          python -m build $(python_build_flags) . | tee build.log \
+          $(pkg_build_cmd) | tee build.log \
             && cp build.log build.stamp && date >> build.stamp \
 	    && mv build.stamp .build.stamp
 
@@ -130,7 +135,7 @@ install-pbs: config_env.sh
 	PATH=/glade/derecho/scratch/vanderwb/experiment/pbs-bashfuncs/bin:$$PATH ;\
           qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 \
           -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp vision-v$(TORCHVISION_VERSION)/.install.stamp
-	source config_env.sh && python ./tests/credit_imports.py
+	source config_env.sh && python ./tests/test_imports.py
 
 # umbrella build-pbs rule
 build-pbs: config_env.sh
@@ -142,3 +147,15 @@ build-pbs: config_env.sh
 nccl-ofi/install/lib/libnccl-net.so nccl-ofi/install/lib/libnccl.so nccl-ofi: \
 	utils/build_nccl-ofi-plugin.sh
 	./$<
+
+# QoL rule to run etags on all git-managed source files (optionally, containing STR).
+tags TAGS etags:
+	if [ "x$(STR)" != "x" ]; then \
+	  echo "Tagging files containing $(STR)" ; \
+	  git grep -l $(STR) ; \
+	  etags $$(git grep -l $(STR)) ; \
+	else \
+	  echo "Tagging all git managed files:" ; \
+	  git ls-tree -r HEAD --name-only ; \
+	  etags $$(git ls-tree -r HEAD --name-only) ; \
+	fi

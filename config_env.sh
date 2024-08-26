@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export PYTORCH_VERSION="${PYTORCH_VERSION:-2.3.1}"
-export CREDIT_PYTHON_VERSION="${CREDIT_PYTHON_VERSION:-3.11}"
+export ENV_PYTHON_VERSION="${ENV_PYTHON_VERSION:-3.11}"
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -65,79 +65,50 @@ init_conda_env()
     cat <<EOF > ${env_file}
 channels:
   - conda-forge
-  - pytorch
   - base
 dependencies:
-  - python=${CREDIT_PYTHON_VERSION}
+  - python=${ENV_PYTHON_VERSION}
   - astunparse
-  - cartopy
-  - ccache
   - cmake
+  - conda-build
   - cusparselt
-  - dask
-  - dask-jobqueue
-  - distributed
   - expecttest!=0.2.0
-  - ffmpeg<=5
+  - ffmpeg>=4.2.2,<5
   - filelock
-  - flake8
+  - flake8        # <-- torchvision
   - fsspec
-  - geocat-comp
   - hypothesis
   - jinja2
-  - jupyter
   - lark
-  - libjpeg-turbo
-  - libpng
+  - libjpeg-turbo # <-- torchvision
+  - libpng        # <-- torchvision
   - lintrunner
-  - magma-cuda121
-  - matplotlib
-  - mpich=3.4=external_* # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
-  #- mpich=3 # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
-  - mypy
-  - netcdf4
+  #- mpich=3.4=external_* # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
+  #- mpi4py
+  - pytorch::magma-cuda121 # <-- https://github.com/pytorch/pytorch?tab=readme-ov-file#install-dependencies
+  - mypy          # <-- torchvision
   - networkx
   - ninja
   - numpy<2
   - optree>=0.11.0
   - packaging
-  - pandas
+  - pip
   - psutil
-  - pyarrow
-  - pytest
-  - pytest-mock
+  - pytest        # <-- torchvision
+  - pytest-mock   # <-- torchvision
   - pyyaml
   - requests
-  - scikit-learn
-  - scipy
+  - scipy         # <-- torchvision
   - setuptools
   - sympy
   - types-dataclasses
-  - typing
+  - typing        # <-- torchvision
   - typing-extensions>=4.8.0
-  - wandb
-  - xarray
-  - xesmf
-  - zarr
-  - pip
   - pip:
-    - bridgescaler
     - build
-    - echo-opt
-    - einops
-    - haversine
     - mkl-include
     - mkl-static
     - mpi4py
-    - rotary-embedding-torch
-    - segmentation-models-pytorch
-    - timm>=0.9.2
-    - torch==${PYTORCH_VERSION} # <-- Pinned to the same version we will install later (and overwrite this one...)
-    - torchvision==${TORCHVISION_VERSION}
-    - torch-harmonics
-    - torch_geometric
-    - torchsummary
-    - vector_quantize_pytorch
 EOF
 
     cat ${env_file}
@@ -227,9 +198,6 @@ EOF
         find ${env_dir} -name ${lib} -print0 | xargs -0 rm -vf
     done
 
-    #rm -vrf ${env_dir}/lib/*/site-packages/{torch,torch-${PYTORCH_VERSION}.dist-info}
-    #rm -vrf ${env_dir}/lib/*/site-packages/torchvision*  #{torchvision,torchvision-${TORCHVISION_VERSION}.dist-info,torchvision.libs}
-
     cat ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
     conda activate ${env_dir}
 
@@ -246,7 +214,7 @@ export MPICXX=$(which mpicxx)
 init_conda_env
 
 #-------------------------------------------------------------------------------
-echo "#--> setting buildtime variables we want when compiling pytorch"
+echo "#--> setting buildtime variables we want when compiling pytorch / torchvision"
 #set -x
 export CC=${MPICC}
 export CXX=${MPICXX}
@@ -255,12 +223,19 @@ export CMAKE_CXX_COMPILER=${CXX}
 export CFLAGS='-Wno-maybe-uninitialized -Wno-uninitialized -Wno-nonnull'
 export CXXFLAGS="${CFLAGS}"
 
+export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
+
 export MAX_JOBS=96
+
+# pytorch:
 export BUILD_TEST=0
 export USE_FFMPEG=1
 export USE_BLAS=MKL
+#export MKL_ROOT=/notfound
+#export MKL_LIB_DIR=/notfound
+#export MKL_INCLUDE_DIR=/notfound
 export USE_MPI=1
-export USE_CUDA=1 # <-- https://github.com/pytorch/pytorch#from-source
+export USE_CUDA=1
 export TORCH_CUDA_ARCH_LIST="8.0" # <-- A100s
 export USE_CUDNN=1
 export CUDNN_LIBRARY=${NCAR_ROOT_CUDNN}
@@ -271,17 +246,12 @@ export USE_SYSTEM_NCCL=1
 export NCCL_ROOT=${script_dir}/nccl-ofi/install
 export NCCL_LIB_DIR=${NCCL_ROOT}/lib
 export NCCL_INCLUDE_DIR=${NCCL_ROOT}/include
-
-export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
-
-export FORCE_CUDA=1 # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
-
-#export TORCHVISION_USE_FFMPEG=0
-
-# versioning the packages for easy identification in a messy environment:
 export PYTORCH_BUILD_VERSION="${PYTORCH_VERSION}+${NCAR_BUILD_ENV}"
 export PYTORCH_BUILD_NUMBER=1
-export TORCHVISION_BUILD_VERSION="${TORCHVISION_VERSION}+${NCAR_BUILD_ENV_COMPILER}"
 
+# torchvision:
+export FORCE_CUDA=1 # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
+export TORCHVISION_USE_FFMPEG=1
+export TORCHVISION_BUILD_VERSION="${TORCHVISION_VERSION}+${NCAR_BUILD_ENV_COMPILER}"
 set +x
 #-------------------------------------------------------------------------------

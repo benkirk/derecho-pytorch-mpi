@@ -4,15 +4,9 @@ import os
 import sys
 import glob
 import yaml
-import wandb
-import optuna
-import shutil
-import logging
-import warnings
 
 from pathlib import Path
 from argparse import ArgumentParser
-from echo.src.base_objective import BaseObjective
 
 import torch
 import torch.distributed as dist
@@ -23,7 +17,12 @@ import torchvision
 import mpi4py
 
 
-
+print('\n'*3)
+print('-'*80)
+print(__file__)
 print('All modules imported.')
-print('torch version={}'.format(torch.__version__))
-print('torchvision version={}'.format(torchvision.__version__))
+print('torch version = {}'.format(torch.__version__))
+print('torchvision version = {}'.format(torchvision.__version__))
+print('mpi4py version = {}'.format(mpi4py.__version__))
+print('-'*80)
+print('\n'*3)
