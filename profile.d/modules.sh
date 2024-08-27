@@ -2,7 +2,7 @@ export PYTORCH_VERSION="${PYTORCH_VERSION:-2.3.1}"
 
 #-------------------------------------------------------------------------------
 # setup host environment
-type module 2>/dev/null \
+type module >/dev/null 2>&1 \
     || source /etc/profile.d/z00_modules.sh
 module --force purge
 module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 cuda/12.2.1

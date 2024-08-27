@@ -77,6 +77,7 @@ dependencies:
   - cmake
   - conda-build
   - conda-tree
+  - conda-verify
   - cusparselt
   - expecttest!=0.2.0
   - ffmpeg>=4.2.2,<5
