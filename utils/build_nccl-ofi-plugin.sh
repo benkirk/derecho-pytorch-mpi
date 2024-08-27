@@ -26,7 +26,7 @@ export CC=$(which gcc)
 export CXX=$(which g++)
 
 build_dir=${top_dir}/build-${NCAR_BUILD_ENV}
-rm -rf ${build_dir} ${INSTALL_DIR}
+rm -rf ${build_dir}
 mkdir -p ${build_dir}
 
 echo "========== BUILDING NCCL =========="
