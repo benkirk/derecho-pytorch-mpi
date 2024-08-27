@@ -76,6 +76,7 @@ dependencies:
   - astunparse
   - cmake
   - conda-build
+  - conda-tree
   - cusparselt
   - expecttest!=0.2.0
   - ffmpeg>=4.2.2,<5

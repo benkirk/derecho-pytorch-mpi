@@ -11,11 +11,9 @@ set -e
 top_dir=$(git rev-parse --show-toplevel)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-module reset >/dev/null 2>&1
-module load gcc/12.2.0 cuda/12.2.1 >/dev/null 2>&1
-module list
+source ${top_dir}/profile.d/modules.sh || exit 1
 
-export INSTALL_DIR=${top_dir}/nccl-ofi/${NCAR_BUILD_ENV}
+export INSTALL_DIR="${INSTALL_DIR:-${top_dir}/nccl-ofi/${NCAR_BUILD_ENV}}"
 export NCCL_HOME=${INSTALL_DIR}
 export LIBFABRIC_HOME=/opt/cray/libfabric/1.15.2.0
 export MPI_HOME=${CRAY_MPICH_DIR}
