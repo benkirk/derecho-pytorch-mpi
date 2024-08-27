@@ -9,7 +9,7 @@ activate_env=${activate_env:-true}
 #-------------------------------------------------------------------------------
 # setup host environment
 module --force purge
-module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 conda/latest cuda/12.2.1
+module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 cuda/12.2.1
 export CONDA_OVERRIDE_CUDA="12.2"
 
 case "${PYTORCH_VERSION}" in
@@ -50,6 +50,9 @@ echo "env_dir=${env_dir}"
 # function to activate conda env (or, create if needed)
 activate_conda_env()
 {
+    # onnly load conda module if needed to activate env
+    module load conda/latest
+
     # quick init / return if exists
     if [ -d ${env_dir} ]; then
         conda activate ${env_dir}
