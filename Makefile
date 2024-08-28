@@ -79,6 +79,7 @@ pytorch-v$(PYTORCH_VERSION)/.build.stamp: pytorch-v$(PYTORCH_VERSION) Makefile c
 	  echo "$${PYTORCH_BUILD_VERSION}" > version.txt ;\
           $(pkg_build_cmd) | tee build.log \
             && cp build.log build.stamp && date >> build.stamp \
+	    && mkdir -p ../wheels && cp -f ./dist/*.whl ../wheels \
 	    && mv build.stamp .build.stamp
 
 # specifically *unset* PYTORCH_VERSION during build, otherwise torchvision will attempt to
@@ -102,6 +103,7 @@ vision-v$(TORCHVISION_VERSION)/.build.stamp: vision-v$(TORCHVISION_VERSION) #pyt
           PYTORCH_VERSION="$${PYTORCH_BUILD_VERSION}" ;\
           $(pkg_build_cmd) | tee build.log \
             && cp build.log build.stamp && date >> build.stamp \
+	    && mkdir -p ../wheels && cp -f ./dist/*.whl ../wheels \
 	    && mv build.stamp .build.stamp
 
 # build under PBS with qcmd. Intended to be run on a login node.

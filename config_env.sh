@@ -1,10 +1,12 @@
 #!/bin/bash
 
-export PYTORCH_VERSION="${PYTORCH_VERSION:-2.3.1}"
-export ENV_PYTHON_VERSION="${ENV_PYTHON_VERSION:-3.11}"
-
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 activate_env=${activate_env:-true}
+
+# package version defaults (set-if-unset)
+export PYTORCH_VERSION="${PYTORCH_VERSION:-2.3.1}"
+export ENV_PYTHON_VERSION="${ENV_PYTHON_VERSION:-3.11}"
+export MPI4PY_VERSION="${MPI4PY_VERSION:-4.0.0}"
 
 #-------------------------------------------------------------------------------
 # setup host environment
@@ -33,7 +35,7 @@ case "${PYTORCH_VERSION}" in
 esac
 module list
 
-env_name="envs/build-pytorch-${NCAR_BUILD_ENV}"
+env_name="envs/pytorch-buildenv-${NCAR_BUILD_ENV}"
 env_dir="${script_dir}/${env_name}"
 
 echo "PYTORCH_VERSION=${PYTORCH_VERSION}"
@@ -74,6 +76,7 @@ channels:
 dependencies:
   - python=${ENV_PYTHON_VERSION}
   - astunparse
+  - ccache
   - cmake
   - conda-build
   - conda-tree
@@ -241,10 +244,17 @@ export MAX_JOBS="${MAX_JOBS:-96}"
 # pytorch:
 export BUILD_TEST=0
 export USE_FFMPEG=1
+
 export USE_BLAS=MKL
-#export MKL_ROOT=/notfound
-#export MKL_LIB_DIR=/notfound
-#export MKL_INCLUDE_DIR=/notfound
+export BLAS=MKL # <-- this nugget will cause CMake to abort if it can't find MKL, instead of try others
+# mkl from host environment - alternatively, omit these three and instead add to the conda env
+#export MKL_ROOT="/glade/u/apps/derecho/23.09/spack/opt/spack/intel-oneapi-mkl/2024.2.1/oneapi/2024.2.1/elye/mkl/2024.2"
+#export MKL_ROOT="/glade/u/apps/derecho/23.09/spack/opt/spack/intel-oneapi-mkl/2023.2.0/oneapi/2023.2.1/vhs7/mkl/2023.2.0"
+#export MKL_LIB_DIR=${MKL_ROOT}/lib/intel64
+#export MKL_INCLUDE_DIR=${MKL_ROOT}/include
+#export MKL_LIBRARIES="-Wl,--start-group ${MKL_ROOT}/lib/intel64/libmkl_intel_lp64.a ${MKL_ROOT}/lib/intel64/libmkl_gnu_thread.a ${MKL_ROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl"
+export USE_MKLDNN=1
+
 export USE_MPI=1
 export USE_CUDA=1
 export TORCH_CUDA_ARCH_LIST="8.0" # <-- A100s

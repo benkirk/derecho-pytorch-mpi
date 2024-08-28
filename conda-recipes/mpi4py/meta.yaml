@@ -1,4 +1,5 @@
 #{% set data = load_setup_py_data() %}
+#{% set version = "4.0.0+derecho.gcc.12.2.0.cray.mpich.8.1.27" %}
 {% set version = "4.0.0" %}
 
 package:
@@ -10,21 +11,21 @@ source:
     git_rev: 'conda-packaging'
 
 build:
-  #script: build.sh
+  string: 'derecho.gcc.12.2.0.cray.mpich.8.1.27'
 
-  rpaths:
-    - lib/
-    - lib64/
-    - '/glade/u/apps/common/23.08/spack/opt/spack/cuda/12.2.1/lib64'
-    - '/glade/u/apps/derecho/23.09/opt/view/lib'
-    - '/glade/u/apps/derecho/23.09/opt/view/lib64'
+  # rpaths:
+  #   - lib/
+  #   - lib64/
+  #   - '/glade/u/apps/common/23.08/spack/opt/spack/cuda/12.2.1/lib64'
+  #   - '/glade/u/apps/derecho/23.09/opt/view/lib'
+  #   - '/glade/u/apps/derecho/23.09/opt/view/lib64'
 
-  runpath_whitelist:
-    - '/glade/u/apps/common/23.08/spack/opt/spack/cuda/12.2.1/lib64'
-    - '/glade/u/apps/derecho/23.09/opt/view/lib'
-    - '/glade/u/apps/derecho/23.09/opt/view/lib64'
-    - '/glade/*/lib'
-    - '/glade/*/lib64'
+  # runpath_whitelist:
+  #   - '/glade/u/apps/common/23.08/spack/opt/spack/cuda/12.2.1/lib64'
+  #   - '/glade/u/apps/derecho/23.09/opt/view/lib'
+  #   - '/glade/u/apps/derecho/23.09/opt/view/lib64'
+  #   - '/glade/*/lib'
+  #   - '/glade/*/lib64'
 
   # we're really abusing conda-build here.  This package will only work
   # on Derecho with cray-mpich - therefore it will have many dependent
@@ -41,15 +42,16 @@ build:
 
 requirements:
   build:
-    - wget
-    - curl
     - cython
     - git
-    - python
+    - make
     - pip
+    - python
+  #   - libstdcxx-ng >=12.2
 
   run:
-    - python
+    - libstdcxx-ng >=12.2
+  #   - python
 
 test:
   imports:
@@ -65,11 +67,14 @@ about:
   home: https://mpi4py.github.io/
   license: BSD-3-Clause
   license_family: BSD
-  #flicense_file: LICENSE.rst
+  #license_file: LICENSE.rst
   summary: Python bindings for MPI
   description: |
     MPI for Python provides bindings of the Message Passing Interface (MPI)
     standard for the Python programming language, allowing any Python program
     to exploit multiple processors.
+
+    This particular mpi4py package is designed to run on NSF NCAR's Derecho
+    supercomputer using the host-provided cray-mpich MPI library.
   doc_url: https://mpi4py.readthedocs.org/
   dev_url: https://github.com/mpi4py/mpi4py
