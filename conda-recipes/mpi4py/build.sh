@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
 # run via:
-# conda-build ./conda-recipes/mpi4py
+# conda-build --output-folder output/ ./mpi4py 2>&1 | tee conda_build_mpi4py.log
 
-source profile.d/modules.sh >/dev/null 2>&1
+pwd
+ls
+
+source modules.sh >/dev/null 2>&1
 module unload ncarcompilers cudnn  >/dev/null 2>&1
 module list
 

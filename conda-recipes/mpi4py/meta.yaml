@@ -1,31 +1,14 @@
-#{% set data = load_setup_py_data() %}
-#{% set version = "4.0.0+derecho.gcc.12.2.0.cray.mpich.8.1.27" %}
-{% set version = "4.0.0" %}
-
 package:
   name: mpi4py
-  version: {{ version }}
+  version: '{{ os.environ.get("MPI4PY_VERSION", "4.0.0") }}'
 
 source:
-  - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
-    git_rev: 'conda-packaging'
+#  - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
+#    git_rev: 'conda-packaging'
+   - path: ../../profile.d
 
 build:
   string: 'derecho.gcc.12.2.0.cray.mpich.8.1.27'
-
-  # rpaths:
-  #   - lib/
-  #   - lib64/
-  #   - '/glade/u/apps/common/23.08/spack/opt/spack/cuda/12.2.1/lib64'
-  #   - '/glade/u/apps/derecho/23.09/opt/view/lib'
-  #   - '/glade/u/apps/derecho/23.09/opt/view/lib64'
-
-  # runpath_whitelist:
-  #   - '/glade/u/apps/common/23.08/spack/opt/spack/cuda/12.2.1/lib64'
-  #   - '/glade/u/apps/derecho/23.09/opt/view/lib'
-  #   - '/glade/u/apps/derecho/23.09/opt/view/lib64'
-  #   - '/glade/*/lib'
-  #   - '/glade/*/lib64'
 
   # we're really abusing conda-build here.  This package will only work
   # on Derecho with cray-mpich - therefore it will have many dependent
@@ -43,25 +26,19 @@ build:
 requirements:
   build:
     - cython
-    - git
-    - make
     - pip
     - python
-  #   - libstdcxx-ng >=12.2
+    #- libstdcxx-ng #>=12.2
 
-  run:
-    - libstdcxx-ng >=12.2
-  #   - python
+#  run:
+#    - libstdcxx-ng #>=12.2
+##   - python
 
 test:
   imports:
     - mpi4py
     - mpi4py.MPI
     - mpi4py.futures
-    - mpi4py.util.dtlib
-    - mpi4py.util.pkl5
-    - mpi4py.util.pool
-    - mpi4py.util.sync
 
 about:
   home: https://mpi4py.github.io/
