@@ -10,8 +10,9 @@ export MPI4PY_VERSION="${MPI4PY_VERSION:-4.0.0}"
 
 #-------------------------------------------------------------------------------
 # setup host environment
-module --force purge
-module load ncarenv/23.09 gcc/12.2.0 ncarcompilers cray-mpich/8.1.27 cuda/12.2.1
+source ${script_dir}/profile.d/modules.sh >/dev/null 2>&1 \
+    || { echo "ERROR sourcing profile.d/modules.sh!!"; exit 1; }
+
 export CONDA_OVERRIDE_CUDA="12.2"
 
 case "${PYTORCH_VERSION}" in
@@ -83,7 +84,7 @@ dependencies:
   - conda-verify
   - cusparselt
   - expecttest!=0.2.0
-  - ffmpeg>=4.2.2,<5
+  #- ffmpeg>=4.2.2,<5
   - filelock
   - flake8        # <-- torchvision
   - fsspec
@@ -95,8 +96,8 @@ dependencies:
   - lintrunner
   #- mpich=3.4=external_* # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
   #- mpi4py
-  - mkl-include
-  - mkl-static
+  #- mkl-include
+  #- mkl-static  # < -- when installed through conda, this poses a dependency on llvm-openmp for libomp.so
   - pytorch::magma-cuda121 # <-- https://github.com/pytorch/pytorch?tab=readme-ov-file#install-dependencies
   - mypy          # <-- torchvision
   - networkx
@@ -119,6 +120,9 @@ dependencies:
   - pip:
     - build
     - mpi4py
+    #- mkl-include
+    #- mkl-static # <-- when installed through pip, we only get a dependency on the host's libgomp.so.1
+    - pipdeptree
 EOF
 
     cat ${env_file}
@@ -129,87 +133,13 @@ EOF
           -p ${env_dir} \
         || exit 1
 
+    # set optimal NCCL env vars when activating environment
     mkdir -p ${env_dir}/etc/conda/activate.d ${env_dir}/etc/conda/deactivate.d
-
-    cat <<EOF > ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
-#-------------------------------------------------------------------------------
-# defaults for runtime variables we want when operating inside the
-# ${env_name} conda environment
-
-# pytorch manage visible devices
-unset CUDA_VISIBLE_DEVICES
-
-# Cray-MPICH GPU-Centric bits
-#export MPICH_GPU_MANAGED_MEMORY_SUPPORT_ENABLED=1
-export MPICH_GPU_SUPPORT_ENABLED=1
-export MPICH_OFI_NIC_POLICY=GPU
-
-### Ref: HPE "Running NCCL-Based Applications" v1.1 March 4, 2024
-### NCCL with AWS-OFI-Plugin:
-# The memory cache monitor is responsible for detecting system memory
-# changes made between the virtual addresses used by an application and
-# the underlying physical pages. The HPE Slingshot NIC supports
-# userfaultfd, memhooks, kdreg2, and disabled. Userfaultfd is a Linux
-# kernel feature used to report virtual to physical address mapping
-# changes to user space. Memhooks operates by intercepting relevant
-# memory allocation and deallocation calls which may result in the
-# mappings changing, such as malloc, mmap, free, etc. kdreg2 is a new
-# implementation HPE recently delivered. Each has different capabilities
-# so some applications may require one monitor but will crash with
-# another. The default is currently set to memhooks. HPE has found that
-# NCCL will deadlock with memhooks, so this must be set to userfaultfd
-# for these applications. HPE has not yet done testing with kdreg2 for
-# these applications.
-export FI_MR_CACHE_MONITOR=userfaultfd
-
-# This will avoid CUDA allocation calls from the provider that may cause NCCL deadlocks.
-export FI_CXI_DISABLE_HOST_REGISTER=1
-
-# This should be set especially for large jobs. It will default to
-# 1024. HPE recommends 131072. (Note that any CQ size specified by the
-# higher-level application will override the default set with this
-# environment variable. HPE does not believe that the OFI Plug-In sets
-# this today).
-export FI_CXI_DEFAULT_CQ_SIZE=131072
-
-# FI_CXI_DEFAULT_TX_SIZE should be set especially for large jobs that
-# are dependent on unexpected rendezvous messaging. The default is 256
-# and should be sufficient for most most applications with well- behaved
-# communication patterns that do not lead to very large number of
-# unexpected messages for specific processes in the job. It should be
-# set to at least as large as the number of outstanding unexpected
-# rendezvous messages that must be supported for the endpoint plus
-# 256. Note that any CQ size specified by the higher-level application
-# will override the default set with this environment variable. HPE does
-# not believe that the OFI Plug-In sets this today).
-unset FI_CXI_DEFAULT_TX_SIZE
-
-# On large systems, this NCCL setting has been found to improve performance.
-export NCCL_CROSS_NIC=1
-
-# This NCCL setting is required to enable RDMA between GPUs.
-export NCCL_SOCKET_IFNAME=hsn
-
-# NCCL may use any visible interface for bootstrapping communication or
-# socket communication. This variable limits NCCL bootstrap/socket usage
-# to specific interfaces if desired.
-export NCCL_NET_GDR_LEVEL=PHB
-
-# With this setting, if NCCL fails to load the Libfabric plugin at
-# runtime, NCCL will terminate.  Without it, NCCL may fallback and run
-# on sockets which may be undesirable.
-export NCCL_NET="AWS Libfabric"
-
-export NCCL_DEBUG=WARN
-#-------------------------------------------------------------------------------
-EOF
-    # echo "Removing unwanted bits - to reinstall later..."
-    # for lib in "libnccl.so*"; do
-    #     find ${env_dir} -name ${lib} -print0 | xargs -0 rm -vf
-    # done
-
+    cp ${script_dir}/profile.d/derecho-nccl-aws-ofi.cfg ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
     cat ${env_dir}/etc/conda/activate.d/derecho-env_vars.sh
+
     conda activate ${env_dir}
+    conda-tree deptree
 
     # fix the conda shebang so conda build works!!
     # https://conda.discourse.group/t/conda-build-modulenotfounderror-no-module-named-conda/538/2
@@ -243,18 +173,15 @@ export MAX_JOBS="${MAX_JOBS:-96}"
 
 # pytorch:
 export BUILD_TEST=0
-export USE_FFMPEG=1
-
+export USE_FFMPEG=0 # <-- dropped in pytorch-v2.4, so lets keep out of earlier versions too.
 export USE_BLAS=MKL
 export BLAS=MKL # <-- this nugget will cause CMake to abort if it can't find MKL, instead of try others
 # mkl from host environment - alternatively, omit these three and instead add to the conda env
-#export MKL_ROOT="/glade/u/apps/derecho/23.09/spack/opt/spack/intel-oneapi-mkl/2024.2.1/oneapi/2024.2.1/elye/mkl/2024.2"
-#export MKL_ROOT="/glade/u/apps/derecho/23.09/spack/opt/spack/intel-oneapi-mkl/2023.2.0/oneapi/2023.2.1/vhs7/mkl/2023.2.0"
-#export MKL_LIB_DIR=${MKL_ROOT}/lib/intel64
-#export MKL_INCLUDE_DIR=${MKL_ROOT}/include
-#export MKL_LIBRARIES="-Wl,--start-group ${MKL_ROOT}/lib/intel64/libmkl_intel_lp64.a ${MKL_ROOT}/lib/intel64/libmkl_gnu_thread.a ${MKL_ROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl"
+export MKL_ROOT="/glade/work/benkirk/spack-downstreams/derecho/23.09/opt/spack/intel-oneapi-mkl/2024.2.1/gcc/12.2.0/bj62/mkl/2024.2"
+export MKL_INCLUDE_DIR=${MKL_ROOT}/include
+export MKL_LIB_DIR=${MKL_ROOT}/lib
 export USE_MKLDNN=1
-
+export USE_DISTRIBUTED=1
 export USE_MPI=1
 export USE_CUDA=1
 export TORCH_CUDA_ARCH_LIST="8.0" # <-- A100s
@@ -272,7 +199,8 @@ export PYTORCH_BUILD_NUMBER=1
 
 # torchvision:
 export FORCE_CUDA=1 # <-- https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#clone-and-install-torchvision
-export TORCHVISION_USE_FFMPEG=1
+#export TORCHVISION_USE_FFMPEG=1 # <-- works, just need ffmpeg >=4.2.2,<5 installed in the build and run environments
+export TORCHVISION_USE_FFMPEG=0
 export TORCHVISION_BUILD_VERSION="${TORCHVISION_VERSION}+${NCAR_BUILD_ENV_COMPILER}"
 set +x
 #-------------------------------------------------------------------------------

@@ -16,7 +16,6 @@ from torch.distributed.fsdp.sharded_grad_scaler import ShardedGradScaler
 import torchvision
 import mpi4py
 
-
 print('\n'*3)
 print('-'*80)
 print(__file__)

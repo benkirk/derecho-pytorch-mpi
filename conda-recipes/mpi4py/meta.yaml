@@ -1,14 +1,14 @@
 package:
   name: mpi4py
-  version: '{{ os.environ.get("MPI4PY_VERSION", "4.0.0") }}'
+  version: '{{ environ.get("MPI4PY_VERSION", "4.0.0") }}'
 
 source:
-#  - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
-#    git_rev: 'conda-packaging'
-   - path: ../../profile.d
+   - path: ../../profile.d/modules.sh
+   - path: meta.yaml
 
 build:
-  string: 'derecho.gcc.12.2.0.cray.mpich.8.1.27'
+  number: 1000 # high priortity over other matches at same version
+  string: '{{ environ.get("NCAR_BUILD_ENV").replace("-",".") }}'
 
   # we're really abusing conda-build here.  This package will only work
   # on Derecho with cray-mpich - therefore it will have many dependent
@@ -45,7 +45,7 @@ about:
   license: BSD-3-Clause
   license_family: BSD
   #license_file: LICENSE.rst
-  summary: Python bindings for MPI
+  summary: Python bindings for MPI (built to run on Derecho using the host-provided cray-mpich MPI library).
   description: |
     MPI for Python provides bindings of the Message Passing Interface (MPI)
     standard for the Python programming language, allowing any Python program

@@ -9,3 +9,10 @@ for PYTORCH_VERSION in "2.4.0" "2.3.1" "2.2.2"; do
 
     make clean {install,build}-pbs
 done
+
+for MPI4PY_VERSION in "4.0.0" "3.1.6"; do
+
+    source ${top_dir}/config_env.sh || exit 1
+
+    make -C conda-recipes conda-build-mpi4py
+done
