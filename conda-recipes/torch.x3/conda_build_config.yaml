@@ -6,7 +6,7 @@ MACOSX_SDK_VERSION:         # [osx]
 
 blas_impl:
   - mkl                         # [x86_64]
-  - generic
+#  - generic
 
 github_actions_labels:          # [linux]
 - cirun-openstack-gpu-2xlarge   # [linux]
