@@ -39,11 +39,6 @@ make nccl-ofi
 rm -vf ${INSTALL_DIR}/lib/libnccl_static.a
 unset INSTALL_DIR
 
-export MAX_JOBS=6
-
-#activate_env=false
-#source config_env.sh
-
 cd ${PREFIX}
 pwd
 # ls
@@ -58,4 +53,15 @@ for libname in $(find -name "libtorch*.so"); do
     objdump -p ${libname} | grep NEEDED | sort | uniq
     ldd ${libname}
 done
+
+echo "all shared lib deps:"
+cd ${PREFIX}
+mkdir -p lib/torch.deps
+find lib -name "libtorch*.so" -o -name "libnccl*.so" | \
+    2>/dev/null xargs ldd | \
+    grep " => "| grep -v '$PREFIX' | grep -v "${SYS_PREFIX}" | \
+    awk '{NF=NF-1; print $0}' | \
+    sort | uniq | \
+    tee lib/torch.deps/host_libs.dep
+
 exit 0
