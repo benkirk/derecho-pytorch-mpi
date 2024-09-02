@@ -6,7 +6,7 @@ TORCHVISION_VERSION ?= 0.18.1
 SHELL := /bin/bash
 
 # setup some make variables for controlling installation, packaging rules
-pip_install_flags := --no-build-isolation #--no-deps -v
+pip_install_flags := --no-build-isolation --no-clean #--no-deps -v # --no-clean keeps build directories, and wheels
 pkg_install_cmd := python -m pip install $(pip_install_flags) .
 #pkg_install_cmd := python setup.py install
 

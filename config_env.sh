@@ -36,7 +36,7 @@ case "${PYTORCH_VERSION}" in
 esac
 module list
 
-env_name="envs/pytorch-buildenv-${NCAR_BUILD_ENV}"
+env_name="envs/pytorch-buildenv-py${ENV_PYTHON_VERSION}-${NCAR_BUILD_ENV}"
 env_dir="${script_dir}/${env_name}"
 
 echo "PYTORCH_VERSION=${PYTORCH_VERSION}"
