@@ -177,9 +177,10 @@ export USE_FFMPEG=0 # <-- dropped in pytorch-v2.4, so lets keep out of earlier v
 export USE_BLAS=MKL
 export BLAS=MKL # <-- this nugget will cause CMake to abort if it can't find MKL, instead of try others
 # mkl from host environment - alternatively, omit these three and instead add to the conda env
-export MKL_ROOT="/glade/work/benkirk/spack-downstreams/derecho/23.09/opt/spack/intel-oneapi-mkl/2024.2.1/gcc/12.2.0/bj62/mkl/2024.2"
+export MKL_ROOT="${MKLROOT}"
 export MKL_INCLUDE_DIR=${MKL_ROOT}/include
 export MKL_LIB_DIR=${MKL_ROOT}/lib
+export USE_STATIC_MKL=0
 export USE_MKLDNN=1
 export USE_DISTRIBUTED=1
 export USE_MPI=1

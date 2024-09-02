@@ -1,0 +1,16 @@
+# conda create --channel file:///glade/derecho/scratch/benkirk/derecho-pytorch-mpi-devel/conda-recipes/output --channel conda-forge --override-channels --prefix negin_resnet mpi4py
+name: negin_resnet
+channels:
+  - file:///glade/derecho/scratch/benkirk/derecho-pytorch-mpi-devel/conda-recipes/output
+  - conda-forge
+dependencies:
+#  - pytorch
+  - mpi4py
+  - python=3.11.*
+#  - libblas=*=*mkl
+#  - numpy
+#  - xarray
+#  - pandas
+#  - pytorch=2.1.2
+#  - torchvision=0.16.2
+#  - pytorch-cuda=12.1

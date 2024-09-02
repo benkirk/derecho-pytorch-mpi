@@ -5,6 +5,6 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11.*
-  - pytorch
+  - pytorch=2.3
   - numpy<2
   - mpi4py
