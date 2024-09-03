@@ -41,6 +41,7 @@ env_dir="${script_dir}/${env_name}"
 
 echo "PYTORCH_VERSION=${PYTORCH_VERSION}"
 echo "TORCHVISION_VERSION=${TORCHVISION_VERSION}"
+echo "ENV_PYTHON_VERSION=${ENV_PYTHON_VERSION}"
 echo "NCAR_BUILD_ENV=${NCAR_BUILD_ENV}"
 echo "env_dir=${env_dir}"
 
@@ -81,7 +82,7 @@ dependencies:
   - cmake
   - conda-build
   - conda-tree
-  - conda-verify
+  #- conda-verify (breaks with python-3.12)
   - cusparselt
   - expecttest!=0.2.0
   #- ffmpeg>=4.2.2,<5

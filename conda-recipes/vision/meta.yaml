@@ -1,29 +1,25 @@
-{% set version_env = os.environ.get("PYTORCH_VERSION", "2.3.1") %}
+{% set pytorch_version_env = os.environ.get("PYTORCH_VERSION", "2.3.1") %}
+{% set version_env = os.environ.get("TORCHVISION_VERSION", "0.18.1") %}
 
 package:
-  name: pytorch
-  version: '{{ version_env }}' #'{{ os.environ.get("PYTORCH_VERSION", "2.3.1") }}'
+  name: torchvision
+  version: '{{ version_env }}'
 
 source:
   - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
     git_rev: 'conda-packaging'
 
-  # #git_url: https://github.com/pytorch/pytorch
-  # #git_rev: v{{ version }}
-  # url: https://github.com/pytorch/pytorch/releases/download/v{{ version }}/pytorch-v{{ version }}.tar.gz
-  # sha256: 6c66b59345091907cd62a693b647cee224558e7f15a9b04f4f322f4f6ffeb75b
-  # folder: pytorch-v{{ version }}
-
-
 build:
   number: 1000 # high priortity over other matches at same version
-  string: derecho.gcc.12.2.0.cray.mpich.8.1.27_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
+  string: derecho.gcc.12.2.0_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
   script_env:
     - NCAR_BUILD_ENV
+    - NCAR_BUILD_ENV_COMPILER
 
   rpaths:
     - lib/
     - lib/torch.deps/
+    - lib/torchvision.deps/
 
   # we're really abusing conda-build here.  This package will only work
   # on Derecho with cray-mpich - therefore it will have many dependent
@@ -68,40 +64,33 @@ requirements:
   run:
     - python
     #- ffmpeg >=4.2.2,<5
-    #- llvm-openmp
-    - cusparselt==0.6.2.3
     #- libstdcxx-ng #>=12.2
     #- libgcc-ng #>=12.2
     #- _openmp_mutex #>=4.5
-    - filelock
-    - fsspec
-    - jinja2
-    - networkx
-    - sympy
-    - typing-extensions >=4.8.0
+    - numpy <2
+    - pillow !=8.3.*,>=5.3.0
+    - pytorch=={{ pytorch_version_env }}
+    - libjpeg-turbo
+    - libpng
 
-# from torch:
-# Requirement already satisfied: filelock (from torch==2.3.1+derecho) (3.15.4)
-# Requirement already satisfied: typing-extensions>=4.8.0 (from torch==2.3.1+derecho) (4.12.2)
-# Requirement already satisfied: sympy (from torch==2.3.1+derecho) (1.13.2)
-# Requirement already satisfied: networkx (from torch==2.3.1+derecho) (3.3)
-# Requirement already satisfied: jinja2 (from torch==2.3.1+derecho) (3.1.4)
-# Requirement already satisfied: fsspec (from torch==2.3.1+derecho) (2024.6.1)
+# from torchvison:
+# Requirement already satisfied: numpy (from torchvision==0.18.1+derecho) (1.26.4)
+# Requirement already satisfied: torch==2.3.1+derecho (from torchvision==0.18.1+derecho) (2.3.1+derecho)
+# Requirement already satisfied: pillow!=8.3.*,>=5.3.0 (from torchvision==0.18.1+derecho) (10.4.0)
 
 test:
   imports:
     - torch
-    - torch.distributed
-  commands:
-    - find $CONDA_PREFIX -name libtorch.so | xargs ldd
-
+    - torchvision
+    - torchvision.datasets
+    - torchvision.models
+    - torchvision.transforms
+    - torchvision.utils
 about:
   home: https://pytorch.org/
-  dev_url: https://github.com/pytorch/pytorch
   license: BSD-3-Clause
   license_family: BSD
   license_file:
-    - '../../pytorch-v{{ version_env }}/LICENSE'
-    - '../../pytorch-v{{ version_env }}/NOTICE'
-    - '../../pytorch-v{{ version_env }}/third_party/pybind11/LICENSE'
-  summary: PyTorch is an optimized tensor library for deep learning using GPUs and CPUs (built to run on Derecho using the host-provided cray-mpich MPI library).
+    - '../../vision-v{{ version_env }}/LICENSE'
+  summary: Image and video datasets and models for torch deep learning (built to run on Derecho using the host-provided libraries).
+  dev_url: https://github.com/pytorch/vision

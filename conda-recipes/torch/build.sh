@@ -23,7 +23,7 @@ echo "PYTHON=${PYTHON}"
 python -m \
        pip install \
        --no-deps --verbose \
-       ${RECIPE_DIR}/../../wheels/torch-${PKG_VERSION}+${ncar_build_env_label}-*-linux_x86_64.whl
+       ${RECIPE_DIR}/../../wheels/torch-${PKG_VERSION}+${ncar_build_env_label}-*${PY_VER/./}*-linux_x86_64.whl
 
 source profile.d/modules.sh
 module unload cudnn ncarcompilers
@@ -39,11 +39,12 @@ make nccl-ofi
 rm -vf ${INSTALL_DIR}/lib/libnccl_static.a
 unset INSTALL_DIR
 
+# create an activate script with NCCL settings
+mkdir -p "${PREFIX}/etc/conda/activate.d"
+cp profile.d/derecho-nccl-aws-ofi.cfg "${PREFIX}/etc/conda/activate.d/${PKG_NAME}_activate.sh"
+
 cd ${PREFIX}
 pwd
-# ls
-# find lib* -name *.so*
-
 
 echo "dependencies of libtorch*.so:"
 objdump -p $(find -name "libtorch*.so") | grep NEEDED | sort | uniq
@@ -51,7 +52,6 @@ objdump -p $(find -name "libtorch*.so") | grep NEEDED | sort | uniq
 for libname in $(find -name "libtorch*.so"); do
     echo && echo && echo ${libname}
     objdump -p ${libname} | grep NEEDED | sort | uniq
-    ldd ${libname}
 done
 
 echo "all shared lib deps:"
