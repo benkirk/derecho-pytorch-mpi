@@ -12,8 +12,9 @@ top_dir=$(git rev-parse --show-toplevel)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 source ${top_dir}/profile.d/modules.sh || exit 1
+module unload cray-mpich
 
-export INSTALL_DIR="${INSTALL_DIR:-${top_dir}/nccl-ofi/${NCAR_BUILD_ENV}}"
+export INSTALL_DIR="${INSTALL_DIR:-${top_dir}/nccl-ofi/${NCAR_BUILD_ENV_COMPILER}}"
 export NCCL_HOME=${INSTALL_DIR}
 export LIBFABRIC_HOME=/opt/cray/libfabric/1.15.2.0
 export MPI_HOME=${CRAY_MPICH_DIR}
@@ -21,11 +22,11 @@ export MPI_HOME=${CRAY_MPICH_DIR}
 export NVCC_GENCODE="-gencode=arch=compute_80,code=sm_80"
 
 export N=10
-export MPICC=$(which mpicc)
+export MPICC=/bin/false
 export CC=$(which gcc)
 export CXX=$(which g++)
 
-build_dir=${top_dir}/build-${NCAR_BUILD_ENV}
+build_dir=${top_dir}/build-${NCAR_BUILD_ENV_COMPILER}
 rm -rf ${build_dir}
 mkdir -p ${build_dir}
 
@@ -48,4 +49,4 @@ cd ${script_dir}
 rm -rf ${build_dir}
 
 # symlink latest installed varsion path
-cd ${INSTALL_DIR}/.. && rm -f ./install && ln -s ${NCAR_BUILD_ENV} ./install
+cd ${INSTALL_DIR}/.. && rm -f ./install && ln -s ${NCAR_BUILD_ENV_COMPILER} ./install

@@ -13,20 +13,18 @@ export MPI4PY_VERSION="${MPI4PY_VERSION:-4.0.0}"
 source ${script_dir}/profile.d/modules.sh >/dev/null 2>&1 \
     || { echo "ERROR sourcing profile.d/modules.sh!!"; exit 1; }
 
-export CONDA_OVERRIDE_CUDA="12.2"
-
 case "${PYTORCH_VERSION}" in
     # see https://github.com/pytorch/vision for torch & vision compatibility
     "2.4.0"*)
-        module load cudnn/9.2.0.82-12
+        #module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.19.0"
         ;;
     "2.3.1"*)
-        module load cudnn/8.8.1.3-12
+        #module load cudnn/8.8.1.3-12
         export TORCHVISION_VERSION="0.18.1"
         ;;
     "2.2.2"*)
-        module load cudnn/8.8.1.3-12
+        #module load cudnn/8.8.1.3-12
         export TORCHVISION_VERSION="0.17.2"
         ;;
     *)
@@ -181,7 +179,7 @@ export BLAS=MKL # <-- this nugget will cause CMake to abort if it can't find MKL
 export MKL_ROOT="${MKLROOT}"
 export MKL_INCLUDE_DIR=${MKL_ROOT}/include
 export MKL_LIB_DIR=${MKL_ROOT}/lib
-export USE_STATIC_MKL=0
+export USE_STATIC_MKL=1
 export USE_MKLDNN=1
 export USE_DISTRIBUTED=1
 export USE_MPI=1

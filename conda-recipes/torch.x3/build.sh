@@ -105,22 +105,22 @@ else
     export BLAS=MKL
 fi
 
-if [[ "$PKG_NAME" == "pytorch" ]]; then
-  PIP_ACTION=install
-  sed "s/3.12/$PY_VER/g" build/CMakeCache.txt.orig > build/CMakeCache.txt
-  # We use a fan-out build to avoid the long rebuild of libtorch
-  # However, the location of the numpy headers changes between python 3.8
-  # and 3.9+ since numpy 2.0 only exists for 3.9+
-  if [[ "$PY_VER" == "3.8" ]]; then
-    sed -i.bak "s#numpy/_core/include#numpy/core/include#g" build/CMakeCache.txt
-  else
-    sed -i.bak "s#numpy/core/include#numpy/_core/include#g" build/CMakeCache.txt
-  fi
-else
-  # For the main script we just build a wheel for so that the C++/CUDA
-  # parts are built. Then they are reused in each python version.
-  PIP_ACTION=wheel
-fi
+# if [[ "$PKG_NAME" == "pytorch" ]]; then
+#   PIP_ACTION=install
+#   sed "s/3.12/$PY_VER/g" build/CMakeCache.txt.orig > build/CMakeCache.txt
+#   # We use a fan-out build to avoid the long rebuild of libtorch
+#   # However, the location of the numpy headers changes between python 3.8
+#   # and 3.9+ since numpy 2.0 only exists for 3.9+
+#   if [[ "$PY_VER" == "3.8" ]]; then
+#     sed -i.bak "s#numpy/_core/include#numpy/core/include#g" build/CMakeCache.txt
+#   else
+#     sed -i.bak "s#numpy/core/include#numpy/_core/include#g" build/CMakeCache.txt
+#   fi
+# else
+#   # For the main script we just build a wheel for so that the C++/CUDA
+#   # parts are built. Then they are reused in each python version.
+#   PIP_ACTION=wheel
+# fi
 
 # MacOS build is simple, and will not be for CUDA
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -201,11 +201,42 @@ else
     export CMAKE_TOOLCHAIN_FILE="${RECIPE_DIR}/cross-linux.cmake"
 fi
 
+#--------------------------------------------------------------------------------
+# BEGIN NCAR-Derecho Customization
+export USE_DISTRIBUTED=1
+
+PIP_ACTION=install
+NCAR_BUILD=true
+
+#export USE_STATIC_MKL=1
+#export USE_NUMA=1
+#export USE_MKLDNN=1
+
+# mkdir -p $PREFIX/cray-mpich
+# rsync -axv /opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/ $PREFIX/cray-mpich/
+#
+# export USE_MPI=0
+# export MPI_HOME=$PREFIX/cray-mpich
+# PATH=${MPI_HOME}/bin:${PATH}
+# which mpicc
+
+export MAX_JOBS=64
+
+#export USE_SYSTEM_NCCL=1
+#export USE_STATIC_NCCL=0
+#NCCL_ROOT_DIR=/glade/derecho/scratch/benkirk/derecho-pytorch-mpi-devel/nccl-ofi/install
+#NCCL_INCLUDE_DIR=${NCCL_ROOT_DIR}/include
+# END NCAR-Derecho Customization
+#--------------------------------------------------------------------------------
+
 echo '${CXX}'=${CXX}
 echo '${PREFIX}'=${PREFIX}
 $PREFIX/bin/python -m pip $PIP_ACTION . --no-deps -vvv --no-clean \
     | sed "s,${CXX},\$\{CXX\},g" \
     | sed "s,${PREFIX},\$\{PREFIX\},g"
+
+# short-circuit remainder, we got what we wanted
+[[ "${NCAR_BUILD}" == true ]] & exit 0
 
 if [[ "$PKG_NAME" == "libtorch" ]]; then
   mkdir -p $SRC_DIR/dist
