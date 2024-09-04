@@ -19,13 +19,14 @@ echo "RECIPE_DIR=${RECIPE_DIR}"
 echo "PREFIX=${PREFIX}"
 echo "PYTHON=${PYTHON}"
 
-# first install our pytorch wheel
+# install our pytorch wheel
 python -m \
        pip install \
        --no-deps --verbose \
        ${RECIPE_DIR}/../../wheels/torch-${PKG_VERSION}+${ncar_build_env_label}-*${PY_VER/./}*-linux_x86_64.whl
 
 source profile.d/modules.sh
+saved_LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 module unload cudnn ncarcompilers
 module list
 conda list
@@ -63,5 +64,9 @@ find lib -name "libtorch*.so" -o -name "libnccl*.so" | \
     awk '{NF=NF-1; print $0}' | \
     sort | uniq | \
     tee lib/torch.deps/host_libs.dep
+
+echo "${saved_LD_LIBRARY_PATH}" > lib/torch.deps/build_env_ld_library_path
+
+pip show -f torch | grep "torch/lib/" | xargs -n 1 basename > lib/torch.deps/pip_manifest_libs
 
 exit 0

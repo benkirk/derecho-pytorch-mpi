@@ -143,6 +143,9 @@ EOF
     # fix the conda shebang so conda build works!!
     # https://conda.discourse.group/t/conda-build-modulenotfounderror-no-module-named-conda/538/2
     sed -i "s,\#\!/usr/bin/env python,#\!${CONDA_PREFIX}/bin/python," ${CONDA_PREFIX}/*bin/conda
+    pushd ${CONDA_PREFIX}/lib/python*/site-packages
+    patch -p0 < ${script_dir}/patches/conda-build/patch-post.py
+    popd
 
     return
 }

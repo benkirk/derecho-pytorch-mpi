@@ -2,18 +2,10 @@
 
 set -e
 
-cd $PREFIX/lib/torch.deps
+saved_LD_LIBRARY_PATH="$(cat $PREFIX/lib/torch.deps/build_env_ld_library_path)"
+patchelf="/glade/u/home/benkirk/bin/patchelf"
 
-cat host_libs.dep | while read line; do
-    linkname=$(echo ${line} | awk '{print $1}')
-    target=$(echo ${line} | awk '{print $3}')
-    ln -s ${target} ${linkname}
-done
-
-cat <<EOF >> $PREFIX/.messages.txt
-------------------------------------------------------------------------------
-re-linked host dependencies into lib/torch.deps:
-$(cat host_libs.dep)
-------------------------------------------------------------------------------
-
-EOF
+# cat $PREFIX/lib/torch.deps/pip_manifest_libs | while read libname; do
+#     find $PREFIX/lib -name ${libname} -print0 \
+#         | xargs -0 -n1 ${patchelf} --add-rpath ${saved_LD_LIBRARY_PATH}
+# done
