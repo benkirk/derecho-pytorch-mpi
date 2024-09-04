@@ -12,7 +12,7 @@ top_dir=$(git rev-parse --show-toplevel)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 source ${top_dir}/profile.d/modules.sh || exit 1
-module unload cray-mpich
+module unload cray-mpich mkl
 
 export INSTALL_DIR="${INSTALL_DIR:-${top_dir}/nccl-ofi/${NCAR_BUILD_ENV_COMPILER}}"
 export NCCL_HOME=${INSTALL_DIR}
@@ -42,7 +42,7 @@ cd ${build_dir}
 git clone -b v1.6.0 https://github.com/aws/aws-ofi-nccl.git
 cd aws-ofi-nccl
 ./autogen.sh
-./configure --with-cuda=${CUDA_HOME} --with-libfabric=${LIBFABRIC_HOME} --prefix=${INSTALL_DIR} --disable-tests
+./configure --with-cuda=${CUDA_HOME} --with-libfabric=${LIBFABRIC_HOME} --prefix=${INSTALL_DIR} --disable-tests LDFLAGS="-Wl,-rpath,${LIBFABRIC_HOME}/lib64"
 make -j ${N} install
 
 cd ${script_dir}
