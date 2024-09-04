@@ -1,4 +1,4 @@
---- conda_build/post.py.old	2024-09-03 18:55:54.000000000 -0600
+--- conda_build/post.py.orig	2024-09-03 18:55:54.000000000 -0600
 +++ conda_build/post.py	2024-09-03 19:32:46.000000000 -0600
 @@ -636,10 +636,11 @@
          if old.startswith("$ORIGIN"):

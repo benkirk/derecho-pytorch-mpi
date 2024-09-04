@@ -4,7 +4,8 @@ channels:
   - file:///glade/derecho/scratch/benkirk/derecho-pytorch-mpi-devel/conda-recipes/output
   - conda-forge
 dependencies:
-  - python=3.12.*
-  - torchvision=0.18
+  - python=3.10.*
+  - torchvision=0.17
   - numpy<2
   - mpi4py
+  - conda-tree
