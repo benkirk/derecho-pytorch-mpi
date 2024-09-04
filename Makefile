@@ -65,7 +65,7 @@ clean:
 pytorch-v$(PYTORCH_VERSION)/.install.stamp: pytorch-v$(PYTORCH_VERSION) Makefile config_env.sh nccl-ofi
 	rm -f $@
 	source config_env.sh ;\
-	  pip uninstall --yes torch ;\
+	  pip uninstall --yes torchvision torch ;\
           cd pytorch-v$(PYTORCH_VERSION) ;\
 	  echo "$${PYTORCH_BUILD_VERSION}" > version.txt ;\
           $(pkg_install_cmd) | tee install.log \
@@ -84,7 +84,7 @@ pytorch-v$(PYTORCH_VERSION)/.build.stamp: pytorch-v$(PYTORCH_VERSION) Makefile c
 
 # specifically *unset* PYTORCH_VERSION during build, otherwise torchvision will attempt to
 # require that, match closest, and download something.  Which we do not want.
-vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) #pytorch-v$(PYTORCH_VERSION)/.install.stamp
+vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION)
 	rm -f $@
 	source config_env.sh ;\
 	  pip uninstall --yes torchvision ;\
@@ -95,7 +95,7 @@ vision-v$(TORCHVISION_VERSION)/.install.stamp: vision-v$(TORCHVISION_VERSION) #p
             && cp install.log install.stamp && date >> install.stamp \
 	    && mv install.stamp .install.stamp
 
-vision-v$(TORCHVISION_VERSION)/.build.stamp: vision-v$(TORCHVISION_VERSION) #pytorch-v$(PYTORCH_VERSION)/.install.stamp
+vision-v$(TORCHVISION_VERSION)/.build.stamp: vision-v$(TORCHVISION_VERSION)
 	rm -f $@
 	source config_env.sh ;\
           cd vision-v$(TORCHVISION_VERSION) ;\
