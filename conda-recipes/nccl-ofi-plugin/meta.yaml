@@ -1,0 +1,63 @@
+{% set name = "nccl" %}
+{% set version = "2.21.5-1" %} # needs to match the git repo we doewnlaod in build_nccl-ofi-plugin.sh
+
+package:
+  name: nccl
+  version: '{{ version|replace("-", ".") }}_derecho'
+
+source:
+  - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
+    git_rev: 'conda-packaging'
+
+build:
+  number: 1000 # high priortity over other matches at same version
+  string: gcc.12.2.0_{{ PKG_BUILDNUM }}
+  script_env:
+    - NCAR_BUILD_ENV
+    - NCAR_BUILD_ENV_COMPILER
+
+  # # we're really abusing conda-build here.  This package will only work
+  # # on Derecho with cray-mpich - therefore it will have many dependent
+  # # shared libraries outside the conda-build source tree.  That's OK,
+  # # if distasteful.  Allow it.
+  missing_dso_whitelist:
+    - '*/libcuda*.so.*'
+    - '*/libfabric.so.*'
+    - '*/libpthread.so.0'
+    - '/lib64/ld-linux-x86-64.so.2'
+    - '/lib64/libc.so.6'
+    - '/lib64/libdl.so.2'
+    - '/lib64/libgcc_s.so.1'
+    - '/lib64/libm.so.6'
+    - '/lib64/librt.so.1'
+    - '/usr/lib64/libstdc++.so.6'
+
+requirements:
+  build:
+    - make
+  run:
+
+test:
+  commands:
+    - test -f "${PREFIX}/include/nccl.h"
+    - test -f "${PREFIX}/lib/libnccl.so"
+    - test ! -f "${PREFIX}/lib/libnccl_static.a"
+    - test -f "${PREFIX}/lib/libnccl-net.so"
+    - LD_LIBRARY_PATH="" ldd "${PREFIX}/lib/libnccl.so" "${PREFIX}/lib/libnccl-net.so"
+
+about:
+  home: https://developer.nvidia.com/nccl
+  license: BSD-3-Clause
+  license_family: BSD
+  #license_file: LICENSE.txt
+  summary: Optimized primitives for collective multi-GPU communication (built to run on Derecho).
+
+  description: |
+    The NVIDIA Collective Communications Library (NCCL) implements multi-GPU
+    and multi-node collective communication primitives that are performance
+    optimized for NVIDIA GPUs. NCCL provides routines such as all-gather,
+    all-reduce, broadcast, reduce, reduce-scatter, that are optimized to
+    achieve high bandwidth over PCIe and NVLink high-speed interconnect.
+
+  doc_url: https://docs.nvidia.com/deeplearning/sdk/nccl-developer-guide/docs/index.html
+  dev_url: https://github.com/NVIDIA/nccl

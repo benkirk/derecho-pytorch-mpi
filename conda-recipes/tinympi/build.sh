@@ -50,20 +50,20 @@ mpicxx -o $PREFIX/bin/hello_world_mpi $SRC_DIR/hello_world_mpi.C -fopenmp
 ldd $PREFIX/bin/hello_world_mpi
 $PREFIX/bin/hello_world_mpi
 
-mkdir -p $PREFIX/opt/cray
-cd $PREFIX/opt/cray
-ln -s /opt/cray/* .
-ls
-cd $SRC_DIR
-ls
-mkdir -p wrapper_bin
-cd wrapper_bin
-ln -s $(which $CXX) g++
-ln -s $(which $CC) gcc
-
-link_host_libs
-PATH=$PREFIX/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/bin:$SRC_DIR/wrapper_bin:$PATH
-mpicxx -o $PREFIX/bin/hello_world_mpi.cray $SRC_DIR/hello_world_mpi.C -fopenmp
+# mkdir -p $PREFIX/opt/cray
+# cd $PREFIX/opt/cray
+# ln -s /opt/cray/* .
+# ls
+# cd $SRC_DIR
+# ls
+# mkdir -p wrapper_bin
+# cd wrapper_bin
+# ln -s $(which $CXX) g++
+# ln -s $(which $CC) gcc
+#
+# link_host_libs
+# PATH=$PREFIX/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/bin:$SRC_DIR/wrapper_bin:$PATH
+# mpicxx -o $PREFIX/bin/hello_world_mpi.cray $SRC_DIR/hello_world_mpi.C -fopenmp
 
 
 # END NCAR-Derecho Customization

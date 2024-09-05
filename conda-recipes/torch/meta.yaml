@@ -1,9 +1,8 @@
-{% set version_env = os.environ.get("PYTORCH_VERSION", "2.3.1") %}
-{% set ncar_build_env = os.environ.get("NCAR_BUILD_ENV") %}
+{% set version_env = os.environ.get("PYTORCH_VERSION") %}
 
 package:
   name: pytorch
-  version: '{{ version_env }}'
+  version: '{{ version_env }}_derecho'
 
 source:
   - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
@@ -11,15 +10,9 @@ source:
 
 build:
   number: 1000 # high priortity over other matches at same version
-  string: derecho.gcc.12.2.0.cray.mpich.8.1.27_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
+  string: gcc.12.2.0.cray.mpich.8.1.27_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
   script_env:
     - NCAR_BUILD_ENV
-  track_features:
-    - '{{ ncar_build_env }}'
-
-  rpaths:
-    - lib/
-    - lib/torch.deps/
 
   # we're really abusing conda-build here.  This package will only work
   # on Derecho with cray-mpich - therefore it will have many dependent
@@ -73,6 +66,7 @@ requirements:
     - fsspec
     - jinja2
     - networkx
+    - nccl =*_derecho
     - sympy
     - typing-extensions >=4.8.0
 
@@ -89,7 +83,7 @@ test:
     - torch
     - torch.distributed
   commands:
-    - find $CONDA_PREFIX -name libtorch.so | xargs ldd
+    - LD_LIBRARY_PATH="" find $CONDA_PREFIX -name libtorch.so | xargs ldd
 
 about:
   home: https://pytorch.org/

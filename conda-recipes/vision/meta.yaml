@@ -1,9 +1,9 @@
-{% set pytorch_version_env = os.environ.get("PYTORCH_VERSION", "2.3.1") %}
-{% set version_env = os.environ.get("TORCHVISION_VERSION", "0.18.1") %}
+{% set pytorch_version_env = os.environ.get("PYTORCH_VERSION") %}
+{% set version_env = os.environ.get("TORCHVISION_VERSION") %}
 
 package:
   name: torchvision
-  version: '{{ version_env }}'
+  version: '{{ version_env }}_derecho'
 
 source:
   - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
@@ -11,15 +11,10 @@ source:
 
 build:
   number: 1000 # high priortity over other matches at same version
-  string: derecho.gcc.12.2.0_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
+  string: gcc.12.2.0_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
   script_env:
     - NCAR_BUILD_ENV
     - NCAR_BUILD_ENV_COMPILER
-
-  rpaths:
-    - lib/
-    - lib/torch.deps/
-    - lib/torchvision.deps/
 
   # we're really abusing conda-build here.  This package will only work
   # on Derecho with cray-mpich - therefore it will have many dependent
@@ -69,7 +64,7 @@ requirements:
     #- _openmp_mutex #>=4.5
     - numpy <2
     - pillow !=8.3.*,>=5.3.0
-    - pytorch=={{ pytorch_version_env }}
+    - pytorch=={{ pytorch_version_env }}_derecho
     - libjpeg-turbo
     - libpng
 
@@ -86,6 +81,7 @@ test:
     - torchvision.models
     - torchvision.transforms
     - torchvision.utils
+
 about:
   home: https://pytorch.org/
   license: BSD-3-Clause
