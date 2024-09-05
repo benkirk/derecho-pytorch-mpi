@@ -1,3 +1,0 @@
-[submodule "conda-recipes/torch.x3/upstream-feedstock"]
-	path = conda-recipes/torch.x3/upstream-feedstock
-	url = https://github.com/conda-forge/pytorch-cpu-feedstock.git
