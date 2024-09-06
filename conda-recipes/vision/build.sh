@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-echo && echo && echo "------------------------------------------------------------------------------------------"
-env
-echo "------------------------------------------------------------------------------------------" && echo && echo
-
 ncar_build_env_label="${NCAR_BUILD_ENV_COMPILER//-/.}"
 echo "NCAR_BUILD_ENV_COMPILER=${NCAR_BUILD_ENV_COMPILER}"
 echo ncar_build_env_label="${ncar_build_env_label}"

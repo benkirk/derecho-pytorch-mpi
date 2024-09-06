@@ -4,13 +4,9 @@ package:
   name: pytorch
   version: '{{ version_env }}_derecho'
 
-source:
-  - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
-    git_rev: 'conda-packaging'
-
 build:
   number: 1000 # high priortity over other matches at same version
-  string: gcc.12.2.0.cray.mpich.8.1.27_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
+  string: {{ environ.get('NCAR_BUILD_ENV').replace('derecho-','').replace('-','.') }}_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
   script_env:
     - NCAR_BUILD_ENV
 
@@ -65,6 +61,7 @@ requirements:
     - filelock
     - fsspec
     - jinja2
+    - mpich =3*=external_*
     - networkx
     - nccl =*_derecho
     - sympy

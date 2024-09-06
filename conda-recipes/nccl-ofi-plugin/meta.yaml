@@ -5,21 +5,14 @@ package:
   name: nccl
   version: '{{ version|replace("-", ".") }}_derecho'
 
-source:
-  - git_url: https://github.com/benkirk/derecho-pytorch-mpi.git
-    git_rev: 'conda-packaging'
-
 build:
   number: 1000 # high priortity over other matches at same version
-  string: gcc.12.2.0_{{ PKG_BUILDNUM }}
-  script_env:
-    - NCAR_BUILD_ENV
-    - NCAR_BUILD_ENV_COMPILER
+  string: ofi.plugin_{{ PKG_BUILDNUM }}
 
-  # # we're really abusing conda-build here.  This package will only work
-  # # on Derecho with cray-mpich - therefore it will have many dependent
-  # # shared libraries outside the conda-build source tree.  That's OK,
-  # # if distasteful.  Allow it.
+  # we're really abusing conda-build here.  This package will only work
+  # on Derecho with cray-mpich - therefore it will have many dependent
+  # shared libraries outside the conda-build source tree.  That's OK,
+  # if distasteful.  Allow it.
   missing_dso_whitelist:
     - '*/libcuda*.so.*'
     - '*/libfabric.so.*'
@@ -35,6 +28,7 @@ build:
 requirements:
   build:
     - make
+  # no run deps, all taken from host
   run:
 
 test:

@@ -1,14 +1,13 @@
 package:
   name: mpi4py
-  version: '{{ environ.get("MPI4PY_VERSION", "4.0.0") }}'
+  version: '{{ environ.get('MPI4PY_VERSION', '4.0.0') }}_derecho'
 
 source:
    - path: ../../profile.d/modules.sh
-   - path: meta.yaml
 
 build:
   number: 1000 # high priortity over other matches at same version
-  string: '{{ environ.get("NCAR_BUILD_ENV").replace("-",".") }}'
+  string: {{ environ.get('NCAR_BUILD_ENV').replace('derecho-','').replace('-','.') }}_py{{ PY_VER }}_{{ PKG_BUILDNUM }}
 
   # we're really abusing conda-build here.  This package will only work
   # on Derecho with cray-mpich - therefore it will have many dependent
@@ -28,11 +27,9 @@ requirements:
     - cython
     - pip
     - python
-    #- libstdcxx-ng #>=12.2
 
-#  run:
-#    - libstdcxx-ng #>=12.2
-##   - python
+  run:
+    - mpich =3*=external_*
 
 test:
   imports:

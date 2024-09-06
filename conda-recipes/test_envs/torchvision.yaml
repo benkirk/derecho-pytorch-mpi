@@ -5,7 +5,7 @@ channels:
   - conda-forge
 dependencies:
   - python
-  - torchvision=*_derecho
+  - torchvision =*_derecho
   - numpy<2
-  - mpi4py
+  - mpi4py =*_derecho
   - conda-tree

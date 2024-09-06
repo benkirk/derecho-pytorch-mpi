@@ -4,7 +4,7 @@
 # conda-build --output-folder output/ ./mpi4py 2>&1 | tee conda_build_mpi4py.log
 
 source modules.sh >/dev/null 2>&1
-module unload ncarcompilers cudnn >/dev/null 2>&1
+module unload cudnn mkl >/dev/null 2>&1
 module list
 
 export MPI4PY_BUILD_MPICC=$(which mpicc)
@@ -22,4 +22,4 @@ which mpicc
 python -m \
        pip install \
        --no-deps --verbose \
-       https://github.com/mpi4py/mpi4py/releases/download/${PKG_VERSION}/mpi4py-${PKG_VERSION}.tar.gz
+       https://github.com/mpi4py/mpi4py/releases/download/${PKG_VERSION//_derecho/}/mpi4py-${PKG_VERSION//_derecho/}.tar.gz
