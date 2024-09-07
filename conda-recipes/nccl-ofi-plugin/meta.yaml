@@ -1,5 +1,5 @@
 {% set name = "nccl" %}
-{% set version = "2.21.5-1" %} # needs to match the git repo we doewnlaod in build_nccl-ofi-plugin.sh
+{% set version = "2.21.5-1" %} # needs to match the git repo we download in build_nccl-ofi-plugin.sh
 
 package:
   name: nccl
@@ -13,6 +13,9 @@ build:
   # on Derecho with cray-mpich - therefore it will have many dependent
   # shared libraries outside the conda-build source tree.  That's OK,
   # if distasteful.  Allow it.
+  runpath_whitelist:
+    - '/opt/cray/*'
+    - '/glade/u/apps/*'
   missing_dso_whitelist:
     - '*/libcuda*.so.*'
     - '*/libfabric.so.*'

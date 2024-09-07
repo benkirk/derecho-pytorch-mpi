@@ -31,6 +31,9 @@ build:
   ignore_run_exports:
     - python *
     - numpy *
+  runpath_whitelist:
+    - '/opt/cray/*'
+    - '/glade/u/apps/*'
 
 requirements:
   # Keep this list synchronized (except for python*, numpy*) in outputs

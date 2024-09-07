@@ -13,6 +13,9 @@ build:
   # on Derecho with cray-mpich - therefore it will have many dependent
   # shared libraries outside the conda-build source tree.  That's OK,
   # if distasteful.  Allow it.
+  runpath_whitelist:
+    - '/opt/cray/*'
+    - '/glade/u/apps/*'
   missing_dso_whitelist:
     - '*/libpmi*.so.0'
     - '*/libpals.so.0'
