@@ -82,8 +82,8 @@ dependencies:
   - conda-tree
   #- conda-verify (breaks with python-3.12)
   - cusparselt
-  - expecttest!=0.2.0
-  #- ffmpeg>=4.2.2,<5
+  - expecttest !=0.2.0
+  #- ffmpeg >=4.2.2,<5
   - filelock
   - flake8        # <-- torchvision
   - fsspec
@@ -93,7 +93,7 @@ dependencies:
   - libjpeg-turbo # <-- torchvision
   - libpng        # <-- torchvision
   - lintrunner
-  #- mpich=3.4=external_* # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
+  #- mpich =3.4=external_* # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
   #- mpi4py
   #- mkl-include
   #- mkl-static  # < -- when installed through conda, this poses a dependency on llvm-openmp for libomp.so
@@ -101,8 +101,8 @@ dependencies:
   - mypy          # <-- torchvision
   - networkx
   - ninja
-  - numpy<2
-  - optree>=0.11.0
+  - numpy <2
+  - optree >=0.11.0
   - packaging
   - pip
   - psutil
@@ -115,10 +115,10 @@ dependencies:
   - sympy
   - types-dataclasses
   - typing        # <-- torchvision
-  - typing-extensions>=4.8.0
+  - typing-extensions >=4.8.0
   - pip:
     - build
-    - mpi4py
+    #- mpi4py
     #- mkl-include
     #- mkl-static # <-- when installed through pip, we only get a dependency on the host's libgomp.so.1
     - pipdeptree

@@ -31,7 +31,7 @@ build:
   ignore_run_exports:
     - python *
     - numpy *
-  runpath_whitelist:
+  host_runpath_whitelist:
     - '/opt/cray/*'
     - '/glade/u/apps/*'
 

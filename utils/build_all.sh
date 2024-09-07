@@ -5,6 +5,7 @@ set -e
 top_dir=$(git rev-parse --show-toplevel)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+source ${top_dir}/config_env.sh
 make -C conda-recipes pbs-build-nccl-ofi-plugin
 
 PYTHONS=("3.12" "3.11" "3.10")

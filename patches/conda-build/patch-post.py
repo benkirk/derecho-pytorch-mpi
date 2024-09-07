@@ -1,11 +1,11 @@
 --- ./conda_build/post.py.orig	2024-07-31 18:11:15.000000000 -0600
-+++ ./conda_build/post.py	2024-09-07 08:31:43.000000000 -0600
++++ ./conda_build/post.py	2024-09-07 09:05:50.000000000 -0600
 @@ -576,7 +576,7 @@
  """
  
  
 -def mk_relative_linux(f, prefix, rpaths=("lib",), method=None):
-+def mk_relative_linux(f, prefix, rpaths=("lib",), runpath_whitelist=[], method=None):
++def mk_relative_linux(f, prefix, rpaths=("lib",), host_runpath_whitelist=[], method=None):
      "Respects the original values and converts abs to $ORIGIN-relative"
  
      elf = join(prefix, f)
@@ -34,11 +34,11 @@
              rp = relpath(old, prefix)
              if rp.startswith(".." + os.sep):
 -                print(f"Warning: rpath {old} is outside prefix {prefix} (removing it)")
-+                # allow it only if in runpath_whitelist.
++                # allow it only if in host_runpath_whitelist.
 +                # BSK - nonstandard behavior to allow packages that depend on host libraries,
 +                #       e.g. host-mpi on Derecho.  Usual conda-build would strip this path regardless
-+                if runpath_whitelist and any(fnmatch(old, w) for w in runpath_whitelist):
-+                    print(f"External rpath {old} allowed (found in runpath_whitelist)")
++                if host_runpath_whitelist and any(fnmatch(old, w) for w in host_runpath_whitelist):
++                    print(f"External rpath {old} allowed (found in host_runpath_whitelist)")
 +                    new.append(old)
 +                else:
 +                    print(f"Warning: rpath {old} is outside prefix {prefix} (removing it)")
@@ -49,7 +49,7 @@
              f,
              host_prefix,
              rpaths=rpaths,
-+            runpath_whitelist=m.get_value("build/runpath_whitelist", []),
++            host_runpath_whitelist=m.get_value("build/host_runpath_whitelist", []),
              method=m.get_value("build/rpaths_patcher", None),
          )
      elif codefile == machofile:
