@@ -1,0 +1,3 @@
+[submodule "conda-recipes"]
+	path = conda-recipes
+	url = git@github.com:benkirk/conda-recipes.git
