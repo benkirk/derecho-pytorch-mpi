@@ -8,8 +8,8 @@ set -e
 
 # This script will download, patch, build, and install NCCL and AWS-OFI-NCCL.
 # NCCL tests can then be built in a container or baremetal for testing.
-top_dir=$(git rev-parse --show-toplevel)
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+top_dir="${script_dir}/.." #$(git rev-parse --show-toplevel)
 
 source ${top_dir}/profile.d/modules.sh || exit 1
 module unload cray-mpich mkl
