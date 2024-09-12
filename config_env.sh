@@ -15,16 +15,22 @@ source ${script_dir}/profile.d/modules.sh >/dev/null 2>&1 \
 
 case "${PYTORCH_VERSION}" in
     # see https://github.com/pytorch/vision for torch & vision compatibility
-    "2.4.0"*)
-        module load cudnn/9.2.0.82-12
+    "2.4.1")
+        #module load cudnn/9.2.0.82-12
+        #module load cudnn/8.8.1.3-12
+        export TORCHVISION_VERSION="0.19.1"
+        ;;
+    "2.4.0")
+        #module load cudnn/9.2.0.82-12
+        #module load cudnn/8.8.1.3-12
         export TORCHVISION_VERSION="0.19.0"
         ;;
-    "2.3.1"*)
-        module load cudnn/8.8.1.3-12
+    "2.3.1")
+        #module load cudnn/8.8.1.3-12
         export TORCHVISION_VERSION="0.18.1"
         ;;
-    "2.2.2"*)
-        module load cudnn/8.8.1.3-12
+    "2.2.2")
+        #module load cudnn/8.8.1.3-12
         export TORCHVISION_VERSION="0.17.2"
         ;;
     *)
@@ -78,9 +84,7 @@ dependencies:
   - astunparse
   - ccache
   - cmake
-  #- conda-build
   - conda-tree
-  #- conda-verify (breaks with python-3.12)
   - cusparselt
   - expecttest !=0.2.0
   #- ffmpeg >=4.2.2,<5
@@ -93,10 +97,6 @@ dependencies:
   - libjpeg-turbo # <-- torchvision
   - libpng        # <-- torchvision
   - lintrunner
-  #- mpich =3.4=external_* # <-- MPI is brought in by other pkgs, require mpich/cray-mpich ABI compatibility
-  #- mpi4py
-  #- mkl-include
-  #- mkl-static  # < -- when installed through conda, this poses a dependency on llvm-openmp for libomp.so
   - pytorch::magma-cuda121 # <-- https://github.com/pytorch/pytorch?tab=readme-ov-file#install-dependencies
   - mypy          # <-- torchvision
   - networkx
@@ -118,9 +118,6 @@ dependencies:
   - typing-extensions >=4.8.0
   - pip:
     - build
-    #- mpi4py
-    #- mkl-include
-    #- mkl-static # <-- when installed through pip, we only get a dependency on the host's libgomp.so.1
     - pipdeptree
 EOF
 
@@ -158,7 +155,7 @@ EOF
 }
 
 # save these **before** intializaing the monster conda environment
-# defined above, that will bring in its own MPI we want no part of...
+# defined above, in case that brings in its own MPI we want no part of...
 save_MPICC=$(which mpicc)
 save_MPICXX=$(which mpicxx)
 
