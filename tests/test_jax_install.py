@@ -1,5 +1,8 @@
+import jax
 import jax.numpy as jnp
 from jax.lib import xla_bridge
+
+jax.print_environment_info()
 
 print("\n\nJAX device config:")
 print(xla_bridge.get_backend().platform)

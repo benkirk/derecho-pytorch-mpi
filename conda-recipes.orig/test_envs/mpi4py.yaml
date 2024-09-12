@@ -1,8 +1,0 @@
-# conda env create -f mpi4py.yaml -p mpi4py-testenv -d
-name: mpi4py-testenv
-channels:
-  - file:///glade/derecho/scratch/benkirk/derecho-pytorch-mpi-devel/conda-recipes/output
-  - conda-forge
-dependencies:
-  - python=3.11.*
-  - mpi4py
