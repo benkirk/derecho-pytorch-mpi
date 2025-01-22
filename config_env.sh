@@ -16,18 +16,23 @@ source ${script_dir}/profile.d/modules.sh >/dev/null 2>&1 \
 case "${PYTORCH_VERSION}" in
     # see https://github.com/pytorch/vision for torch & vision compatibility
     "2.5.1")
+        module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.20.1"
         ;;
     "2.4.1")
+        module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.19.1"
         ;;
     "2.4.0")
+        module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.19.0"
         ;;
     "2.3.1")
+        module load cudnn/8.9.7.29-12
         export TORCHVISION_VERSION="0.18.1"
         ;;
     "2.2.2")
+        module load cudnn/8.9.7.29-12
         export TORCHVISION_VERSION="0.17.2"
         ;;
     *)
