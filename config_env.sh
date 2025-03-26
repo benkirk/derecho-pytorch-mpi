@@ -78,44 +78,39 @@ channels:
   - base
 dependencies:
   - python=${ENV_PYTHON_VERSION}
-  - astunparse
   - ccache
   - cmake
   - conda-tree
   - cusparselt
-  - expecttest !=0.2.0
-  #- ffmpeg >=4.2.2,<5
-  - filelock
-  - flake8        # <-- torchvision
-  - fsspec
-  - hypothesis
-  - jinja2
-  - lark
-  - libjpeg-turbo # <-- torchvision
-  - libpng        # <-- torchvision
-  - lintrunner
-  - pytorch::magma-cuda121 # <-- https://github.com/pytorch/pytorch?tab=readme-ov-file#install-dependencies
-  - mypy          # <-- torchvision
-  - networkx
-  - ninja
-  - numpy <2
-  - optree >=0.11.0
-  - packaging
+  - expecttest !=0.2.0 
   - pip
-  - psutil
-  - pytest        # <-- torchvision
-  - pytest-mock   # <-- torchvision
-  - pyyaml
-  - requests
-  - scipy         # <-- torchvision
-  - setuptools
-  - sympy
-  - types-dataclasses
-  - typing        # <-- torchvision
-  - typing-extensions >=4.8.0
   - pip:
     - build
     - pipdeptree
+    - mpi4py
+    - astunparse
+    - expecttest>=0.2.1
+    - hypothesis
+    - numpy
+    - psutil
+    - pyyaml
+    - requests
+    - setuptools<=72.1.0
+    - types-dataclasses
+    - typing-extensions>=4.8.0
+    - sympy==1.13.1 
+    - filelock
+    - networkx
+    - jinja2
+    - fsspec
+    - lintrunner
+    - ninja
+    - packaging
+    - optree>=0.12.0 
+    - flake8
+    - wheel
+    - packaging
+    - pyyaml
 EOF
 
     cat ${env_file}
