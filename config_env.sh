@@ -15,6 +15,14 @@ source ${script_dir}/profile.d/modules.sh >/dev/null 2>&1 \
 
 case "${PYTORCH_VERSION}" in
     # see https://github.com/pytorch/vision for torch & vision compatibility
+    "2.7.0")
+        module load cudnn/9.2.0.82-12
+        export TORCHVISION_VERSION="0.22.0"
+        ;;
+    "2.6.0")
+        module load cudnn/9.2.0.82-12
+        export TORCHVISION_VERSION="0.21.0"
+        ;;
     "2.5.1")
         module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.20.1"
@@ -85,9 +93,10 @@ dependencies:
   - python=${ENV_PYTHON_VERSION}
   - astunparse
   - ccache
-  - cmake
+  - cmake <4
   - conda-tree
-  - cusparselt
+  - cusparselt-dev
+  - libcudss-dev
   - expecttest !=0.2.0
   #- ffmpeg >=4.2.2,<5
   - filelock
@@ -199,6 +208,7 @@ export CUDNN_LIBRARY=${NCAR_ROOT_CUDNN}
 export CUDNN_LIB_DIR=${NCAR_ROOT_CUDNN}/lib
 export CUDNN_INCLUDE_DIR=${NCAR_ROOT_CUDNN}/include
 export USE_CUSPARSELT=1
+export USE_CUDSS=1
 export USE_SYSTEM_NCCL=1
 export NCCL_ROOT=${script_dir}/nccl-ofi/install
 export NCCL_LIB_DIR=${NCCL_ROOT}/lib

@@ -1,0 +1,19 @@
+diff --git a/setup.py b/setup.py
+index a42aef6..63ab079 100644
+--- a/setup.py
++++ b/setup.py
+@@ -70,10 +70,10 @@ def get_version():
+     except Exception:
+         pass
+ 
+-    if os.getenv("BUILD_VERSION"):
+-        version = os.getenv("BUILD_VERSION")
+-    elif sha != "Unknown":
+-        version += "+" + sha[:7]
++    if os.getenv("TORCHVISION_BUILD_VERSION"):
++        version = os.getenv("TORCHVISION_BUILD_VERSION")
++    #elif sha != "Unknown":
++    #    version += "+" + sha[:7]
+ 
+     return version, sha
+ 
