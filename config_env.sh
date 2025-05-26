@@ -186,7 +186,7 @@ export CXXFLAGS="${CFLAGS}"
 
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
 
-export MAX_JOBS="${MAX_JOBS:-96}"
+export MAX_JOBS="${MAX_JOBS:-8}"
 
 # pytorch:
 export BUILD_TEST=0

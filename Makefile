@@ -1,6 +1,6 @@
 PBS_ACCOUNT     ?= SCSG0001
-PYTORCH_VERSION ?= 2.3.1
-TORCHVISION_VERSION ?= 0.18.1
+PYTORCH_VERSION ?= 2.7.0
+TORCHVISION_VERSION ?= 0.22.0
 
 # require make to use a more capable shell
 SHELL := /bin/bash
@@ -111,31 +111,31 @@ vision-v$(TORCHVISION_VERSION)/.build.stamp: vision-v$(TORCHVISION_VERSION) pyto
 # (use Brian's qcmd wrapper at the moment due to the qsub -V problem...)
 install-pytorch-v$(PYTORCH_VERSION)-pbs: config_env.sh
 	source config_env.sh && conda list
-	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp
+	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=2:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp
 
 build-pytorch-v$(PYTORCH_VERSION)-pbs: config_env.sh
 	source config_env.sh && conda list
-	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.build.stamp
+	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=2:00:00 -l select=1:ncpus=128 -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.build.stamp
 
 install-vision-v$(TORCHVISION_VERSION)-pbs: config_env.sh
 	source config_env.sh && conda list
-	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) vision-v$(TORCHVISION_VERSION)/.install.stamp
+	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=2:00:00 -l select=1:ncpus=128 -- $(MAKE) vision-v$(TORCHVISION_VERSION)/.install.stamp
 
 build-vision-v$(TORCHVISION_VERSION)-pbs: config_env.sh
 	source config_env.sh && conda list
-	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 -- $(MAKE) vision-v$(TORCHVISION_VERSION)/.build.stamp
+	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=2:00:00 -l select=1:ncpus=128 -- $(MAKE) vision-v$(TORCHVISION_VERSION)/.build.stamp
 
 # umbrella install-pbs rule
 install-pbs: config_env.sh
 	source config_env.sh && conda list
-	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 \
+	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=2:00:00 -l select=1:ncpus=128 \
           -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.install.stamp vision-v$(TORCHVISION_VERSION)/.install.stamp
 	source config_env.sh && python ./tests/test_imports.py
 
 # umbrella build-pbs rule
 build-pbs: config_env.sh
 	source config_env.sh && conda list
-	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=1:00:00 -l select=1:ncpus=128 \
+	qcmd -q main -A $(PBS_ACCOUNT) -l walltime=2:00:00 -l select=1:ncpus=128 \
           -- $(MAKE) pytorch-v$(PYTORCH_VERSION)/.build.stamp vision-v$(TORCHVISION_VERSION)/.build.stamp
 
 nccl-ofi/install/lib/libnccl-net.so nccl-ofi/install/lib/libnccl.so nccl-ofi: \
