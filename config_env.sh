@@ -18,10 +18,12 @@ case "${PYTORCH_VERSION}" in
     "2.7.0")
         module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.22.0"
+        export MAX_JOBS=8
         ;;
     "2.6.0")
         module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.21.0"
+        export MAX_JOBS=8
         ;;
     "2.5.1")
         module load cudnn/9.2.0.82-12
@@ -186,7 +188,7 @@ export CXXFLAGS="${CFLAGS}"
 
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX}
 
-export MAX_JOBS="${MAX_JOBS:-8}"
+export MAX_JOBS="${MAX_JOBS:-64}"
 
 # pytorch:
 export BUILD_TEST=0
