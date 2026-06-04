@@ -1,6 +1,6 @@
 PBS_ACCOUNT     ?= SCSG0001
-PYTORCH_VERSION ?= 2.7.0
-TORCHVISION_VERSION ?= 0.22.0
+PYTORCH_VERSION ?= 2.8.0
+TORCHVISION_VERSION ?= 0.23.0
 
 # require make to use a more capable shell
 SHELL := /bin/bash

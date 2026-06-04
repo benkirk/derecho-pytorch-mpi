@@ -15,6 +15,12 @@ source ${script_dir}/profile.d/modules.sh >/dev/null 2>&1 \
 
 case "${PYTORCH_VERSION}" in
     # see https://github.com/pytorch/vision for torch & vision compatibility
+    "2.8.0")
+        module load cudnn/9.2.0.82-12
+        export TORCHVISION_VERSION="0.23.0"
+        export MAX_JOBS=16
+        ;;
+    # see https://github.com/pytorch/vision for torch & vision compatibility
     "2.7.0")
         module load cudnn/9.2.0.82-12
         export TORCHVISION_VERSION="0.22.0"
@@ -114,7 +120,7 @@ dependencies:
   - mypy          # <-- torchvision
   - networkx
   - ninja
-  - numpy <2
+  - numpy <2.3
   - optree >=0.11.0
   - packaging
   - pip
@@ -199,7 +205,7 @@ export BLAS=MKL # <-- this nugget will cause CMake to abort if it can't find MKL
 export MKL_ROOT="${MKLROOT}"
 export MKL_INCLUDE_DIR=${MKL_ROOT}/include
 export MKL_LIB_DIR=${MKL_ROOT}/lib
-export USE_STATIC_MKL=1
+export USE_STATIC_MKL=0
 export USE_MKLDNN=1
 export USE_DISTRIBUTED=1
 export USE_MPI=1

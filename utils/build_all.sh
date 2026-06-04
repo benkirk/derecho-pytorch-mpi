@@ -7,8 +7,8 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 source ${top_dir}/config_env.sh
 
-PYTHONS=("3.10" "3.11" "3.12")
-PYTORCHS=("2.5.1")
+PYTHONS=("3.11" "3.12")
+PYTORCHS=("2.8.0")
 
 for ENV_PYTHON_VERSION in "${PYTHONS[@]}" ; do
 
